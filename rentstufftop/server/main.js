@@ -1,0 +1,1 @@
+Postings = new Mongo.Collection('postings');
