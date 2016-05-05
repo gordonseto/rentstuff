@@ -1,3 +1,6 @@
+accounts-base@1.2.7
+accounts-ui@1.1.9
+accounts-ui-unstyled@1.1.12
 allow-deny@1.0.4
 autopublish@1.0.7
 autoupdate@1.2.9
@@ -16,6 +19,7 @@ check@1.2.1
 ddp@1.2.5
 ddp-client@1.2.7
 ddp-common@1.2.5
+ddp-rate-limiter@1.0.4
 ddp-server@1.2.6
 deps@1.0.12
 diff-sequence@1.0.5
@@ -41,7 +45,9 @@ iron:router@1.0.12
 iron:url@1.0.11
 jquery@1.11.8
 launch-screen@1.0.11
+less@2.6.0
 livedata@1.0.18
+localstorage@1.0.9
 logging@1.0.12
 meteor@1.1.14
 meteor-base@1.0.4
@@ -59,11 +65,14 @@ observe-sequence@1.0.11
 ordered-dict@1.0.7
 promise@0.6.7
 random@1.0.9
+rate-limit@1.0.4
 reactive-dict@1.1.7
 reactive-var@1.0.9
 reload@1.1.8
 retry@1.0.7
 routepolicy@1.0.10
+service-configuration@1.0.9
+session@1.1.5
 spacebars@1.0.11
 spacebars-compiler@1.0.11
 standard-minifier-css@1.0.6

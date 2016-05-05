@@ -3,4 +3,21 @@
 	margin: 50px;
 	padding: 10px;
 	float: left;
+	color: black;
+	text-align: center;
+	width: 100px;
+	height: 100px;
+}
+
+.postPreview:hover{
+	cursor: pointer;
+}
+
+.hometitle{
+	color: black;
+	text-decoration-line: none;
+}
+
+[name="navigation"]{
+	color: black;
 }

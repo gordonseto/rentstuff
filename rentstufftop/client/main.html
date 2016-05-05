@@ -2,13 +2,21 @@
   <title>Rent stuff</title>
 </head>
 <body>
+<div class="hometitle">
+<a href="{{pathFor route='home'}}">
 <h1>Rent stuff</h1>
+</a>
+</div>
   {{> navigation}}
 </body>
 
 <template name="navigation">
-  <a href="{{pathFor route='home'}}">Home</a>
   <a href="{{pathFor route='newPosting'}}">New Posting</a>
+  {{#if currentUser}}
+  {{else}}
+  <a href="{{pathFor route='login'}}">Login</a>
+  <a href="{{pathFor route='register'}}">Register</a>
+  {{/if}}
 </template>
 
 <template name="home">
@@ -17,9 +25,13 @@
 
 <template name="displayPostings">
   {{#each posting}}
+    <a href="{{pathFor route='posting'}}">
     <span class="postPreview">
-    {{title}}
+    <p>{{title}}</p>
+    <p>Location: {{location}}</p>
+    <p>{{rentalrate}} /day</p>
     </span>
+    </a>
   {{/each}}
 </template>
 
@@ -27,8 +39,34 @@
   <p>Title: <input type="text" name="title"></p>
   <p>Description: <input type="text" name="description"></p>
   <p>Location: <input type="text" name="location"></p>
-  <p>Rental rate: <input type="text" name="title"> /day</p>
+  <p>Rental rate: <input type="text" name="rentalrate"> /day</p>
   <form>
   <p><input type="submit" value="Post"></p>
+  </form>
+</template>
+
+<template name="posting">
+  <p>{{title}}</p>
+  <p>{{description}}</p>
+  <p>{{location}}</p>
+  <p>{{rentalrate}} /day</p>
+  <p>Posted: {{createdAt}}</p>
+</template>
+
+<template name="register">
+  <h2>Register</h2>
+  <form class="register">
+  <p>Email: <input type="email" name="email" required></p>
+  <p>Password: <input type="password" name="password" required></p>
+  <p><input type="submit" value="Register"></p>
+  </form>
+</template>
+
+<template name="login">
+  <h2>Login</h2>
+  <form class="login">
+    <p>Email: <input type="email" name="email" required></p>
+    <p>Password: <input type="password" name="password" required></p>
+    <p><input type="submit" value="Login"></p>
   </form>
 </template>
