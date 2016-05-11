@@ -13,6 +13,8 @@
 <template name="navigation">
   <a href="{{pathFor route='newPosting'}}">New Posting</a>
   {{#if currentUser}}
+  <a href="{{pathFor route='account'}}">My Account</a>
+  <a href="#" class="logout">Logout</a>
   {{else}}
   <a href="{{pathFor route='login'}}">Login</a>
   <a href="{{pathFor route='register'}}">Register</a>
@@ -20,8 +22,36 @@
 </template>
 
 <template name="home">
-<p> {{> displayPostings}}</p>
+<p> {{> imageupload}}</p>
+<p> {{> searchbox}}</p>
 </template>
+
+<template name="imageupload">
+  <form>
+    <input type="file" id="postingimage1" name="userimage1"/>
+    <input type="file" id="postingimage2" name="userimage2"/>
+    <button type="submit">Upload</button>
+  </form>
+  <div class="image_holder">
+  </div>
+</template>
+
+<template name="searchbox">
+  
+  {{> EasySearch.Input index=postingsIndex timeout=300}}
+  <ul>
+    {{#EasySearch.Each index=postingsIndex}}
+      <a href="{{pathFor route='posting'}}">
+      <span class="postPreview">
+      <p>{{title}}</p>
+      <p>Location: {{location}}</p>
+      <p>{{rentalrate}} /day</p>
+      </span>
+      </a>
+    {{/EasySearch.Each}}
+  </ul>
+</template>
+
 
 <template name="displayPostings">
   {{#each posting}}
@@ -57,6 +87,7 @@
   <h2>Register</h2>
   <form class="register">
   <p>Email: <input type="email" name="email" required></p>
+  <p>Username: <input type="username" name="username" required></p>
   <p>Password: <input type="password" name="password" required></p>
   <p><input type="submit" value="Register"></p>
   </form>
@@ -69,4 +100,22 @@
     <p>Password: <input type="password" name="password" required></p>
     <p><input type="submit" value="Login"></p>
   </form>
+</template>
+
+<template name="account">
+  <h2>My Account</h2>
+  <h3>My Postings:</h3>
+  {{> accountPostings}}
+</template>
+
+<template name="accountPostings">
+  {{#each posting}}
+    <a href="{{pathFor route='posting'}}">
+    <span class="postPreview">
+    <p>{{title}}</p>
+    <p>Location: {{location}}</p>
+    <p>{{rentalrate}} /day</p>
+    </span>
+    </a>
+{{/each}}
 </template>

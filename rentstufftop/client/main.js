@@ -1,3 +1,13 @@
+/*
+	meteor add accounts-ui						for accounts
+	meteor add accounts-password
+	meteor add iron:router 						for routing
+	meteor add themeteorchef:jquery-validation 	for validator
+	meteor add easy:search 						for searching
+	meteor add lepozepo:cloudinary 				for image upload
+*/
+
+
 Postings = new Mongo.Collection('postings');
 
 Router.route('/',{
@@ -13,6 +23,10 @@ Router.route('/login',{
 	name: 'login'
 })
 
+Router.route('/account',{
+	name: 'account'
+})
+
 Router.route('/newPosting',{
 	name: 'newPosting'
 });
@@ -20,14 +34,20 @@ Router.route('/newPosting',{
 Router.route('/posting/:_id',{
 	name: 'posting',
 	template: 'posting',
-	data: function(){
-		var currentPosting = this.params._id;
+	data: function(){		//retrieves current posting id,
+		var currentPosting = this.params._id; //returns posting info
 		return Postings.findOne({_id: currentPosting});
 		}
 	});
 
 
-if(Meteor.isClient){
+
+	Template.navigation.events({
+		'click .logout': function(event){
+			Meteor.logout();
+			location.reload(); //refresh the page
+		}
+	});
 
 	Template.displayPostings.helpers({
 		'posting': function(){
@@ -40,20 +60,29 @@ if(Meteor.isClient){
 		}
 	});
 
+	Template.accountPostings.helpers({
+		'posting': function(){
+			var currentUser = Meteor.userId();
+			return Postings.find({createdBy: currentUser}, 
+					{sort: {createdAt: -1}});
+		}
+	});
+
 
 	Template.newPosting.events({
 		'submit form': function(){
 			event.preventDefault();
+			var currentUser = Meteor.userId();
 			var title = $('[name="title"]').val();
 			var description = $('[name="description"]').val();
 			var location = $('[name="location"]').val();
 			var rentalrate = $('[name="rentalrate"]').val();
-			console.log(title);
 			var results = Postings.insert({title: title,
 							description: description,
 							location: location,
 							rentalrate: rentalrate,
-							createdAt: new Date()
+							createdAt: new Date(),
+							createdBy: currentUser
 			});
 			Router.go('posting', {_id: results});
 		}
@@ -63,9 +92,11 @@ if(Meteor.isClient){
 		var validator = $('.register').validate({
 			submitHandler: function(event){
 				var email = $('[name=email]').val();
+				var username = $('[name=username]').val();
 				var password = $('[name=password]').val();
 				Accounts.createUser({
 					email: email,
+					username: username,
 					password: password
 				}, function(error){
 					if(error){
@@ -73,7 +104,12 @@ if(Meteor.isClient){
 							validator.showErrors({
 								email: error.reason
 								});
-							}	
+							}
+						if(error.reason == "Username already exists."){
+							validator.showErrors({
+								username:error.reason
+							});
+						}	
 					}
 					else {
 						Router.go("home");
@@ -134,8 +170,44 @@ if(Meteor.isClient){
 			}
 	});
 
-}
 
-if(Meteor.isServer){
 
-}
+/* Search Box */
+
+	Template.searchbox.helpers({
+		postingsIndex: () => PostingsIndex
+	});
+
+/* Image Upload*/
+
+$.cloudinary.config({
+	cloud_name: "gordonseto"
+});
+
+	Template.imageupload.events({
+		//Submit form event
+		'submit form': function(event, t){
+			event.preventDefault();
+
+			var files = [];
+
+			console.log($('#userimage'+2)[0].files[0]);
+
+			/*
+			var file = $('#userimage')[i].files[i];
+			files.push(file)
+			console.log(files)
+			Cloudinary._upload_file(files[i], {}, function(err, res){
+				if(err){
+					console.log(error);
+					return;
+				}
+				console.log(res);
+				console.log(res.public_id);
+				$('.image_holder').append(
+					$.cloudinary.image(res.public_id)
+				);
+			});
+			*/
+		}
+	});
