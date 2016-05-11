@@ -23,19 +23,20 @@
 
 <template name="home">
 <p> {{> imageupload}}</p>
-<p> {{> searchbox}}</p>
+<!--<p> {{> searchbox}}</p>-->
+<p> {{> displayPostings}}</p>
 </template>
 
 <template name="imageupload">
-  <form>
+  <form id="postingimages">
     <input type="file" id="postingimage1" name="userimage1"/>
     <input type="file" id="postingimage2" name="userimage2"/>
-    <button type="submit">Upload</button>
+    <button type="submit" class="submitimages">Upload</button>
   </form>
   <div class="image_holder">
   </div>
 </template>
-
+<!--
 <template name="searchbox">
   
   {{> EasySearch.Input index=postingsIndex timeout=300}}
@@ -51,7 +52,7 @@
     {{/EasySearch.Each}}
   </ul>
 </template>
-
+-->
 
 <template name="displayPostings">
   {{#each posting}}
@@ -71,6 +72,7 @@
   <p>Location: <input type="text" name="location"></p>
   <p>Rental rate: <input type="text" name="rentalrate"> /day</p>
   <form>
+  <p>{{> imageupload}}</p>
   <p><input type="submit" value="Post"></p>
   </form>
 </template>

@@ -77,6 +77,7 @@ Router.route('/posting/:_id',{
 			var description = $('[name="description"]').val();
 			var location = $('[name="location"]').val();
 			var rentalrate = $('[name="rentalrate"]').val();
+			console.log(Session.get("selected_images"));
 			var results = Postings.insert({title: title,
 							description: description,
 							location: location,
@@ -84,7 +85,7 @@ Router.route('/posting/:_id',{
 							createdAt: new Date(),
 							createdBy: currentUser
 			});
-			Router.go('posting', {_id: results});
+			//Router.go('posting', {_id: results});
 		}
 	});
 
@@ -173,11 +174,11 @@ Router.route('/posting/:_id',{
 
 
 /* Search Box */
-
+/*
 	Template.searchbox.helpers({
 		postingsIndex: () => PostingsIndex
 	});
-
+*/
 /* Image Upload*/
 
 $.cloudinary.config({
@@ -189,25 +190,36 @@ $.cloudinary.config({
 		'submit form': function(event, t){
 			event.preventDefault();
 
-			var files = [];
+			var imageArray = [];
+			console.log(imageArray);
+			var numuploads = $("#postingimages input").length; //count how many images to upload
+			
+			for(i = 1; i < numuploads+1; i++){ //loop through images
 
-			console.log($('#userimage'+2)[0].files[0]);
-
-			/*
-			var file = $('#userimage')[i].files[i];
+			var files = []
+			var file = $('#postingimage'+i)[0].files[0];
 			files.push(file)
-			console.log(files)
-			Cloudinary._upload_file(files[i], {}, function(err, res){
+			console.log(files);
+			Cloudinary._upload_file(files[0], {}, function(err, res){
 				if(err){
 					console.log(error);
 					return;
 				}
+				var imageId = res.public_id;
 				console.log(res);
 				console.log(res.public_id);
+				imageArray.push(imageId);
+				console.log(imageArray);
 				$('.image_holder').append(
 					$.cloudinary.image(res.public_id)
 				);
 			});
-			*/
+			console.log(imageArray);
+			var postingImages = {
+				imageId: imageArray
+			}
+			Session.set("selected_images", postingImages);
+			console.log(Session.get("selected_images"));
+		}
 		}
 	});
