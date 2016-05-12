@@ -7,14 +7,14 @@
 <h1>Rent stuff</h1>
 </a>
 </div>
-  {{> navigation}}
+{{> navigation}}
   {{> yield}}
 </template>
 
 <template name="navigation" class="navigation">
   <a href="{{pathFor route='newPosting'}}">New Posting</a>
   {{#if currentUser}}
-  <a href="{{pathFor route='account'}}">My Account</a>
+  <a href="/profile/{{loggedinUser}}">My Account</a>
   <a href="#" class="logout">Logout</a>
   {{else}}
   <a href="{{pathFor route='login'}}">Login</a>
@@ -65,6 +65,7 @@
     <p>{{title}}</p>
     <p>Location: {{location}}</p>
     <p>{{rentalrate}} /day</p>
+    <p>Posted {{timedifference}}</p>
     </span>
     </a>
   {{/each}}
@@ -96,6 +97,7 @@
 </template>
 
 <template name="profile">
+<p><h1>{{username}}:</h1></p>
   {{#each posting}}
     <a href="{{pathFor route='posting'}}">
     <span class="postPreview">
@@ -106,9 +108,10 @@
     <p>{{title}}</p>
     <p>Location: {{location}}</p>
     <p>{{rentalrate}} /day</p>
+    <p>Posted {{timedifference}}</p>
     </span>
     </a>
-{{/each}}
+  {{/each}}
 </template>
 
 <template name="register">

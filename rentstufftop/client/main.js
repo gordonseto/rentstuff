@@ -29,11 +29,11 @@ Router.route('/register',{
 Router.route('/login',{
 	name: 'login'
 })
-
+/*
 Router.route('/account',{
 	name: 'account'
 })
-
+*/
 Router.route('/newPosting',{
 	name: 'newPosting'
 });
@@ -57,6 +57,15 @@ Router.route('/profile/:createdBy', function(){
 		name: 'profile'
 });
 
+	Template.navigation.helpers({
+		'loggedinUser': function(){
+			user = Meteor.users.findOne({_id: Meteor.userId()});
+			if(user){
+				var username = user.username;
+			}
+			return username;
+		}
+	});
 
 	Template.navigation.events({
 		'click .logout': function(event){
@@ -70,9 +79,11 @@ Router.route('/profile/:createdBy', function(){
 			return Postings.find({}, {sort: {createdAt: -1}});
 		},
 		'timedifference': function(){
-			var currentTime = new Date();
-			var postingTime = this.createdAt;
-			return postingTime;
+
+			postedDate = this.createdAt;
+			currentDate = new Date();
+
+			return getTimeDifference(postedDate, currentDate);
 		}
 	});
 
@@ -92,6 +103,12 @@ Router.route('/profile/:createdBy', function(){
 			profileOwner = this.username;
 			return Postings.find({createdBy: profileOwner}, 
 					{sort: {createdAt: -1}});
+		},
+		'timedifference': function(){
+			postedDate = this.createdAt;
+			currentDate = new Date();
+
+			return getTimeDifference(postedDate, currentDate);
 		}
 	})
 
@@ -243,8 +260,6 @@ $.cloudinary.config({
 			console.log(files);
 			Cloudinary._upload_file(files[0], {}, function(err, res){
 				
-				var deferred = $.Deferred();
-
 				if(err){
 					console.log(error);
 					return;
@@ -270,3 +285,52 @@ $.cloudinary.config({
 			},numuploads*1000);
 		}
 	});
+
+/*Time Difference Function*/
+
+	function getTimeDifference(postedDate, currentDate){
+			postedDate.toUTCString();		//convert both 
+			currentDate.toUTCString(); 		//dates to UTC
+
+			postedDate = postedDate.getTime(); //convert both dates
+			currentDate = currentDate.getTime();	//to ms			
+			timedifference = currentDate - postedDate;
+			timedifference /= 1000*60; //time difference is now in mins
+			if(timedifference > 60){
+				timedifference /= 60; //time difference is now in hours
+				if(timedifference > 24){
+					timedifference /= 24; //time difference is now in days
+					if(timedifference > 30){
+						timedifference /= 30; //time difference is now in months
+						if(timedifference > 12){
+							timedifference /= 12; //time difference is now in years
+								timedifference = Math.round(timedifference);
+									if (timedifference > 1){
+									return timedifference + " years ago";
+										}
+									return timedifference + " year ago";
+							}
+						timedifference = Math.round(timedifference);
+							if (timedifference > 1){
+							return timedifference + " months ago";
+								}
+							return timedifference + " month ago";
+					}
+					timedifference = Math.round(timedifference);
+					if (timedifference > 1){
+					return timedifference + " days ago";
+						}
+					return timedifference + " day ago";
+				}
+				timedifference = Math.round(timedifference);
+				if (timedifference > 1){
+				return timedifference + " hours ago";
+					}
+				return timedifference + " hour ago";
+			}
+			timedifference = Math.round(timedifference);
+			if (timedifference > 1){
+			return timedifference + " minutes ago";
+				}
+			return timedifference + " minute ago";
+	}
