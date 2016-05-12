@@ -1,5 +1,10 @@
 Postings = new Mongo.Collection('postings');
 
+//Publish usernames
+Meteor.publish('users', function(){
+	return Meteor.users.find({}, {fields:{username: true}});
+});
+
 //Image Upload
 
 Cloudinary.config({

@@ -1,16 +1,17 @@
+<template name="ApplicationLayout">
 <head>
   <title>Rent stuff</title>
 </head>
-<body>
 <div class="hometitle">
 <a href="{{pathFor route='home'}}">
 <h1>Rent stuff</h1>
 </a>
 </div>
   {{> navigation}}
-</body>
+  {{> yield}}
+</template>
 
-<template name="navigation">
+<template name="navigation" class="navigation">
   <a href="{{pathFor route='newPosting'}}">New Posting</a>
   {{#if currentUser}}
   <a href="{{pathFor route='account'}}">My Account</a>
@@ -22,7 +23,6 @@
 </template>
 
 <template name="home">
-<p> {{> imageupload}}</p>
 <!--<p> {{> searchbox}}</p>-->
 <p> {{> displayPostings}}</p>
 </template>
@@ -58,6 +58,10 @@
   {{#each posting}}
     <a href="{{pathFor route='posting'}}">
     <span class="postPreview">
+        <p>{{#with postingImages}}
+              <img src="{{imageId.[0]}}">
+            {{/with}}
+        </p>
     <p>{{title}}</p>
     <p>Location: {{location}}</p>
     <p>{{rentalrate}} /day</p>
@@ -67,22 +71,44 @@
 </template>
 
 <template name="newPosting">
-  <p>Title: <input type="text" name="title"></p>
-  <p>Description: <input type="text" name="description"></p>
-  <p>Location: <input type="text" name="location"></p>
-  <p>Rental rate: <input type="text" name="rentalrate"> /day</p>
   <form>
+  <p>Title: <input type="text" name="title" required></p>
+  <p>Description: <input type="text" name="description"></p>
+  <p>Location: <input type="text" name="location" required></p>
+  <p>Rental rate: <input type="text" name="rentalrate" required> /day</p>
   <p>{{> imageupload}}</p>
   <p><input type="submit" value="Post"></p>
   </form>
 </template>
 
 <template name="posting">
-  <p>{{title}}</p>
-  <p>{{description}}</p>
-  <p>{{location}}</p>
-  <p>{{rentalrate}} /day</p>
+  <p>Title: {{title}}</p>
+  <p>Posted by: <a href="{{pathFor route='profile'}}">{{createdBy}}</a></p>
+  <p>Description: {{description}}</p>
+  <p>Location: {{location}}</p>
+  <p>Rental rate: {{rentalrate}} /day</p>
   <p>Posted: {{createdAt}}</p>
+  <p> {{#with postingImages}}
+        {{#each imageId}}
+          <img src="{{this}}">
+        {{/each}}
+      {{/with}}</p>
+</template>
+
+<template name="profile">
+  {{#each posting}}
+    <a href="{{pathFor route='posting'}}">
+    <span class="postPreview">
+      <p>{{#with postingImages}}
+          <img src="{{imageId.[0]}}">
+          {{/with}}
+      </p>
+    <p>{{title}}</p>
+    <p>Location: {{location}}</p>
+    <p>{{rentalrate}} /day</p>
+    </span>
+    </a>
+{{/each}}
 </template>
 
 <template name="register">
@@ -114,6 +140,10 @@
   {{#each posting}}
     <a href="{{pathFor route='posting'}}">
     <span class="postPreview">
+      <p>{{#with postingImages}}
+          <img src="{{imageId.[0]}}">
+          {{/with}}
+      </p>
     <p>{{title}}</p>
     <p>Location: {{location}}</p>
     <p>{{rentalrate}} /day</p>

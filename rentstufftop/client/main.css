@@ -1,16 +1,23 @@
 .postPreview{
 	border: solid 1px black;
-	margin: 50px;
+	margin: 20px;
 	padding: 10px;
 	float: left;
 	color: black;
 	text-align: center;
-	width: 100px;
-	height: 100px;
+	width: 150px;
+	height: 150px;
 }
 
 .postPreview:hover{
 	cursor: pointer;
+}
+
+.postPreview img{
+	width: auto;
+	height: auto;
+	max-width: 100px;
+	max-height: 100px;
 }
 
 .hometitle{
@@ -19,5 +26,9 @@
 }
 
 [name="navigation"]{
+	color: black;
+}
+
+.navigation{
 	color: black;
 }

@@ -10,6 +10,13 @@
 
 Postings = new Mongo.Collection('postings');
 
+//Subscribe to usernames
+Meteor.subscribe("users");
+
+Router.configure({
+	layoutTemplate: 'ApplicationLayout'
+});
+
 Router.route('/',{
 	name: 'home',
 	template: 'home'
@@ -40,6 +47,15 @@ Router.route('/posting/:_id',{
 		}
 	});
 
+Router.route('/profile/:createdBy', function(){
+	this.render('profile', {
+		data: {
+			username: this.params.createdBy
+			},
+		});
+	},{
+		name: 'profile'
+});
 
 
 	Template.navigation.events({
@@ -60,6 +76,25 @@ Router.route('/posting/:_id',{
 		}
 	});
 
+	Template.posting.helpers({
+		'user': function(){
+			var postingOwner = this.createdBy;
+			user = Meteor.users.findOne({_id: postingOwner});
+			if(user){
+				var username = user.username;
+			} 
+			return username;
+		}
+	});
+
+	Template.profile.helpers({
+		'posting': function(){
+			profileOwner = this.username;
+			return Postings.find({createdBy: profileOwner}, 
+					{sort: {createdAt: -1}});
+		}
+	})
+
 	Template.accountPostings.helpers({
 		'posting': function(){
 			var currentUser = Meteor.userId();
@@ -73,19 +108,24 @@ Router.route('/posting/:_id',{
 		'submit form': function(){
 			event.preventDefault();
 			var currentUser = Meteor.userId();
+			user = Meteor.users.findOne({_id: currentUser});
+			if (user){
+				var currentUsername = user.username;
+			}
 			var title = $('[name="title"]').val();
 			var description = $('[name="description"]').val();
 			var location = $('[name="location"]').val();
 			var rentalrate = $('[name="rentalrate"]').val();
-			console.log(Session.get("selected_images"));
+			var postingImages = Session.get("selected_images");
 			var results = Postings.insert({title: title,
 							description: description,
 							location: location,
 							rentalrate: rentalrate,
 							createdAt: new Date(),
-							createdBy: currentUser
+							createdBy: currentUsername,
+							postingImages: postingImages 
 			});
-			//Router.go('posting', {_id: results});
+			Router.go('posting', {_id: results});
 		}
 	});
 
@@ -198,28 +238,35 @@ $.cloudinary.config({
 
 			var files = []
 			var file = $('#postingimage'+i)[0].files[0];
+			if(file != null){
 			files.push(file)
 			console.log(files);
 			Cloudinary._upload_file(files[0], {}, function(err, res){
+				
+				var deferred = $.Deferred();
+
 				if(err){
 					console.log(error);
 					return;
 				}
-				var imageId = res.public_id;
+				var imageId = res.secure_url;
 				console.log(res);
 				console.log(res.public_id);
 				imageArray.push(imageId);
 				console.log(imageArray);
 				$('.image_holder').append(
 					$.cloudinary.image(res.public_id)
-				);
-			});
-			console.log(imageArray);
-			var postingImages = {
-				imageId: imageArray
+					);
+				});
 			}
-			Session.set("selected_images", postingImages);
-			console.log(Session.get("selected_images"));
 		}
+			setTimeout(function(){
+				console.log(imageArray);
+				var postingImages = {
+					imageId: imageArray
+				}
+				Session.set("selected_images", postingImages);
+				console.log(Session.get("selected_images"));
+			},numuploads*1000);
 		}
 	});
