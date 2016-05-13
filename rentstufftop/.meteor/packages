@@ -26,3 +26,6 @@ themeteorchef:jquery-validation
 easy:search
 lepozepo:cloudinary
 session
+mrt:jquery-ui
+twbs:bootstrap
+tsega:bootstrap3-datetimepicker

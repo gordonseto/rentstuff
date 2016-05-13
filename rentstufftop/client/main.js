@@ -5,6 +5,10 @@
 	meteor add themeteorchef:jquery-validation 	for validator
 	meteor add easy:search 						for searching
 	meteor add lepozepo:cloudinary 				for image upload
+	npm install -g meteorite			windows only, add meteorite
+	meteor add mrt:jquery-ui					add jquery-ui
+	meteor add twbs:bootstrap					for bootstrap 3
+	meteor add tsega:bootstrap3-datetimepicker	for calendar
 */
 
 
@@ -190,7 +194,7 @@ Router.route('/profile/:createdBy', function(){
 						}	
 					}
 					else {
-						Router.go(Session.get("previousLocationPath"));
+						Router.go('/');
 					}
 				});				
 			}
@@ -205,10 +209,32 @@ Router.route('/profile/:createdBy', function(){
 			var password = $('[name=password]').val();
 			Meteor.loginWithPassword(email, password, function(error){
 				if(error){
-					if(error.reason == "User not found"){
-						validator.showErrors({
-							email: error.reason
-						});
+					if(error.reason == "User not found"){	//if user not found,
+						var username = getUsername(email);	//create a new user
+						console.log(username);
+						console.log(email);
+						console.log(password);
+						Accounts.createUser({
+						email: email,
+						username: username,
+						password: password
+					}, function(error){
+					if(error){
+						if(error.reason == "Email already exists."){
+							validator.showErrors({
+								email: error.reason
+								});
+							}
+						if(error.reason == "Username already exists."){
+							validator.showErrors({
+								email:error.reason
+							});
+						}	
+					}
+					else {
+						Router.go(Session.get("previousLocationPath"));
+					}
+				});
 					}
 					if(error.reason == "Incorrect password"){
 						validator.showErrors({
@@ -248,7 +274,16 @@ Router.route('/profile/:createdBy', function(){
 			}
 	});
 
-
+/*Username from email*/
+function getUsername(email){
+	var username = "";
+	var i = 0;
+		while(email[i] != '@'){
+			username += email[i];
+			i++;
+		}
+	return username;
+}
 
 /* Search Box */
 /*
@@ -357,3 +392,44 @@ $.cloudinary.config({
 				}
 			return timedifference + " minute ago";
 	}
+
+	/* Calendar */
+
+Template.calendar.onRendered(function() {
+	currentDate = new Date();
+	console.log(currentDate);
+        $('#datetimepicker').datetimepicker({
+        	format: 'DD/MM/YYYY',
+            inline: true,
+            sideBySide: true,
+            useCurrent: true,
+            showClose: true
+        });
+        $('#datetimepicker').data("DateTimePicker").hide();
+});
+
+Template.calendar.events({
+	'submit form' (event, template){
+		event.preventDefault();
+		currentUser = Meteor.userId();
+		currentDate = new Date();
+		dateTime = $('#datetimepicker').data("DateTimePicker").date();	//get date from calendar
+		if(dateTime){
+			if(dateTime < currentDate){			//check if valid date
+				alert('Please pick a valid date');
+				$('#datetimepicker').data("DateTimePicker").date([currentDate]);
+				return;
+			}
+			if(!currentUser){
+				Router.go('/login');
+			}
+			else{
+			console.log(dateTime);
+			$('#datetimepicker').data("DateTimePicker").disabledDates([dateTime]);
+			}
+		}
+		else{
+			alert('Make sure to pick a booking time');
+		}
+	}
+});

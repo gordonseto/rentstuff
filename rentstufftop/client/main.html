@@ -88,12 +88,35 @@
   <p>Description: {{description}}</p>
   <p>Location: {{location}}</p>
   <p>Rental rate: {{rentalrate}} /day</p>
-  <p>Posted: {{timedifference}}</p>
+  <p>Posted {{timedifference}}</p>
   <p> {{#with postingImages}}
         {{#each imageId}}
           <img src="{{this}}">
         {{/each}}
       {{/with}}</p>
+      {{> calendar}}
+</template>
+
+<template name="calendar">
+  <form id="book-date">
+    <div class="row">
+      <div class="col-xs-8">
+        <div class="form-group">
+          <div class='input-group date' id='datetimepicker'>
+              <input type='text' class="form-control datetimepicker" data-DateTimePicker>
+              <span class="input-group-addon">             
+                    <span class="glyphicon glyphicon-calendar"></span>
+              </span>
+          </div>
+        </div>
+      </div>
+      <div class="col-xs-4">
+        <div class="form-group">
+          <button class="btn btn-success btn-block">Book</button>
+        </div>
+      </div>
+    </div>
+  </form>
 </template>
 
 <template name="profile">
@@ -126,6 +149,7 @@
 
 <template name="login">
   <h2>Login</h2>
+  <p>If you don't have an account we will create one for you automatically.</p>
   <form class="login">
     <p>Email: <input type="email" name="email" required></p>
     <p>Password: <input type="password" name="password" required></p>
