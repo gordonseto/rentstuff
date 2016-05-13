@@ -38,6 +38,13 @@ Router.route('/newPosting',{
 	name: 'newPosting'
 });
 
+//onStop hook is executed whenever we LEAVE a route
+Router.onStop(function(){
+	//register the previous route location in a session variable
+	Session.set("previousLocationPath", Router.current().url);
+});
+
+
 Router.route('/posting/:_id',{
 	name: 'posting',
 	template: 'posting',
@@ -69,8 +76,14 @@ Router.route('/profile/:createdBy', function(){
 
 	Template.navigation.events({
 		'click .logout': function(event){
+			var currentRoute = Router.current().route.getName();
+			//Router.go(currentRoute);
+			console.log(this._id);
+			console.log(currentRoute);
 			Meteor.logout();
-			location.reload(); //refresh the page
+			document.location.reload(true);
+			//Meteor.logout();
+			//location.reload(); //refresh the page
 		}
 	});
 
@@ -95,7 +108,14 @@ Router.route('/profile/:createdBy', function(){
 				var username = user.username;
 			} 
 			return username;
+		},
+		'timedifference': function(){
+			postedDate = this.createdAt;
+			currentDate = new Date();
+
+			return getTimeDifference(postedDate, currentDate);
 		}
+
 	});
 
 	Template.profile.helpers({
@@ -170,7 +190,7 @@ Router.route('/profile/:createdBy', function(){
 						}	
 					}
 					else {
-						Router.go("home");
+						Router.go(Session.get("previousLocationPath"));
 					}
 				});				
 			}
@@ -199,7 +219,7 @@ Router.route('/profile/:createdBy', function(){
 					else{
 						var currentRoute = Router.current().route.getName();
 						if(currentRoute == "login"){
-						Router.go("home");
+						Router.go(Session.get("previousLocationPath"));
 						}
 					}
 				});
@@ -289,6 +309,9 @@ $.cloudinary.config({
 /*Time Difference Function*/
 
 	function getTimeDifference(postedDate, currentDate){
+			if(postedDate == null || currentDate == null){
+				return;
+			}
 			postedDate.toUTCString();		//convert both 
 			currentDate.toUTCString(); 		//dates to UTC
 
