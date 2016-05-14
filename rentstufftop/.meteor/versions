@@ -3,6 +3,7 @@ accounts-password@1.1.8
 accounts-ui@1.1.9
 accounts-ui-unstyled@1.1.12
 allow-deny@1.0.4
+amplify@1.0.0
 autopublish@1.0.7
 autoupdate@1.2.9
 babel-compiler@6.6.4
@@ -101,6 +102,7 @@ themeteorchef:jquery-validation@1.14.0
 tracker@1.0.13
 tsega:bootstrap3-datetimepicker@4.17.37_1
 twbs:bootstrap@3.3.6
+u2622:persistent-session@0.4.4
 ui@1.0.11
 underscore@1.0.8
 url@1.0.9
