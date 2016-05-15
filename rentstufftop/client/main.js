@@ -154,8 +154,6 @@ Router.route('/profile/:createdBy', function(){
 			console.log(currentUsername);
 			console.log(this.postingId);
 			postingId = this.postingId;
-			currentDaysBooked = this;
-			console.log(currentDaysBooked);
 			addedDays = Session.get("daysBooked");
 			console.log(addedDays);
 			posting = Postings.findOne({_id: postingId});
@@ -163,9 +161,8 @@ Router.route('/profile/:createdBy', function(){
 			console.log(posting.daysBooked);
 			console.log(posting.daysBooked.postingBookings);
 			newBooking = {username: currentUsername, booked: addedDays};
-			posting.daysBooked.postingBookings.push(newBooking);
-			newBookingsArray = posting.daysBooked.postingBookings;
-			//currentdaysBooked = Session.get("daysBooked");
+			posting.daysBooked.postingBookings.push(newBooking);	//get current postingBookings array and push newBookings
+			newBookingsArray = posting.daysBooked.postingBookings;	//update postingBookings in the database
 			Postings.update({_id: postingId}, {$set:{daysBooked: {postingBookings: newBookingsArray}}});
 		}
 	});
