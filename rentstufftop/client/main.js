@@ -235,25 +235,55 @@ Router.route('/profile/:createdBy', function(){
 	Template.confirm.events({
 		'submit form': function(){
 			event.preventDefault();
+			//get current user
 			currentUsername = Meteor.user().username;
 			console.log(currentUsername);
 			console.log(this.postingId);
+			//get posting id
 			postingId = this.postingId;
+			//get added days from session "daysBooked" set in posting events
 			addedDays = Session.get("daysBooked");
 			console.log(addedDays);
 			if(addedDays){
+				//find posting from db 
 				posting = Postings.findOne({_id: postingId});
 				console.log(posting);
 				console.log(posting.daysBooked);
 				console.log(posting.daysBooked.postingBookings);
+				//loop through number of days booked
 				numsDaysBooked = addedDays.length;
 				for(i = 0; i<numDaysBooked; i++){
+					//make new object "newBooking" with username and addedDays
 					newBooking = {username: currentUsername, booked: addedDays[i]};
-					posting.daysBooked.postingBookings.push(newBooking);	//get current postingBookings array and push newBookings
-					newBookingsArray = posting.daysBooked.postingBookings;	//update postingBookings in the database
-				}
+					//push newBooking onto previous saved array
+					posting.daysBooked.postingBookings.push(newBooking);	
+					newBookingsArray = posting.daysBooked.postingBookings;	
+				}	//update postingBookings in the database
 				Postings.update({_id: postingId}, {$set:{daysBooked: {postingBookings: newBookingsArray}}});
+				//Update account booking
+				//meteor username is same as Rentstuff_Users username
+				currentUser = Rentstuff_Users.findOne({username: currentUsername});
+				console.log(currentUser);
+				//get current bookings from user profile
+				current_bookings = currentUser.bookings;
+				console.log(current_bookings);
+				//create object to add to array
+				var bookingObj = {postingId: postingId, 
+									days: addedDays}
+				console.log(bookingObj);
+				//check if posting has already been saved
+				var check = current_bookings.indexOf(bookingObj);
+				if(check != -1){
+					return;
+				} else{			
+				//else push this bookingObj onto array
+				current_bookings.push(bookingObj);
+				console.log(current_bookings);
+				//save new array into rentstuff_users profile
+				Rentstuff_Users.update({_id: currentUser._id}, 
+				{$set:{bookings: current_bookings}});
 				Router.go('success');
+				}
 			}
 		}
 	});
@@ -278,13 +308,29 @@ Router.route('/profile/:createdBy', function(){
 		}
 	});
 
-	Template.profile_saved_postings.helpers({
-		isOwner: function(){
-			if(Meteor.user()){
-				return this.username == Meteor.user().username;
+	Template.profile_bookings.helpers({
+		'bookings': function(){
+			meteorusername = Meteor.user().username;
+			//meteor username is same as Rentstuff_Users username
+			currentUser = Rentstuff_Users.findOne({username: meteorusername});
+			if(currentUser){
+			//get current saved postings array from user profile
+			current_bookings = currentUser.bookings;
+			return current_bookings.reverse();
 			}
-			return false;
 		},
+		'bookings_preview': function(){
+			//get postingId
+			postingId = this.postingId;
+			return Postings.findOne({_id: postingId});
+		},
+		'bookings_preview_days': function(){
+			days = this.days;
+			return getDate(days);
+		}
+	});
+
+	Template.profile_saved_postings.helpers({
 		'saved_postings': function(){
 			meteorusername = Meteor.user().username;
 			//meteor username is same as Rentstuff_Users username
@@ -541,6 +587,7 @@ Router.route('/profile/:createdBy', function(){
 				}
 			}
 	});
+
 
 /*Username from email*/
 function getUsername(email){

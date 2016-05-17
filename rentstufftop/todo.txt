@@ -1,6 +1,4 @@
 -booking collisions
--saved postings
--booked postings
 -account loanings
 -take off autopublish and insecure
 -login and register page fix when already a user
@@ -9,3 +7,4 @@
 -add payments
 -new posting calendar available dates
 -change thumbnail process
+-fix profile bookings order
