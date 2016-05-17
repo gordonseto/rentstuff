@@ -1,0 +1,10 @@
+-booking collisions
+-saved postings
+-booked postings
+-account loanings
+-take off autopublish and insecure
+-login and register page fix when already a user
+-edit posting
+-searchbox
+-add payments
+-new posting calendar, dates available

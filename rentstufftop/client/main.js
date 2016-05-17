@@ -3,17 +3,16 @@
 	meteor add accounts-password
 	meteor add iron:router 						for routing
 	meteor add themeteorchef:jquery-validation 	for validator
-	meteor add easy:search 						for searching
 	meteor add lepozepo:cloudinary 				for image upload
 	npm install -g meteorite			windows only, add meteorite
 	meteor add mrt:jquery-ui					add jquery-ui
 	meteor add twbs:bootstrap					for bootstrap 3
-	meteor add tsega:bootstrap3-datetimepicker	for calendar
-	meteor add u2622:persistent-session			for persistent sessions
-*/
+	meteor add rajit:bootstrap3-datepicker 		for calendar
+*/	
 
 
 Postings = new Mongo.Collection('postings');
+Rentstuff_Users = new Mongo.Collection('rentstuff_users');
 
 //Subscribe to usernames
 Meteor.subscribe("users");
@@ -45,13 +44,31 @@ Router.route('/posting/:postingId/confirm',function(){
 		name: 'confirm'
 });
 
+Router.route('/posting/:_id/edit',function(){
+	this.render('edit',{
+		data: {
+			postingId: this.params.postingId
+			},
+		});
+	},{
+		name: 'edit'
+});
+
+Router.route('/success', {
+	name: 'success'
+})
 /*
 Router.route('/account',{
 	name: 'account'
 })
 */
 Router.route('/newPosting',{
-	name: 'newPosting'
+	name: 'newPosting',
+	onAfterAction: function(){
+		if(!Meteor.userId()){	//if not a user, redirect to login
+			Router.go('/login/');
+		}
+	}
 });
 
 //onStop hook is executed whenever we LEAVE a route
@@ -130,9 +147,20 @@ Router.route('/profile/:createdBy', function(){
 			currentDate = new Date();
 
 			return getTimeDifference(postedDate, currentDate);
+		},
+		isOwner: function(){
+			if(Meteor.user()){
+				return this.createdBy == Meteor.user().username;
+			}
+			return false;
 		}
-
 	});
+
+	Template.posting.events({
+		'click .save-posting': function(){
+
+		}
+	})
 
 	Template.confirm.helpers({
 		'posting': function(){
@@ -156,14 +184,20 @@ Router.route('/profile/:createdBy', function(){
 			postingId = this.postingId;
 			addedDays = Session.get("daysBooked");
 			console.log(addedDays);
-			posting = Postings.findOne({_id: postingId});
-			console.log(posting);
-			console.log(posting.daysBooked);
-			console.log(posting.daysBooked.postingBookings);
-			newBooking = {username: currentUsername, booked: addedDays};
-			posting.daysBooked.postingBookings.push(newBooking);	//get current postingBookings array and push newBookings
-			newBookingsArray = posting.daysBooked.postingBookings;	//update postingBookings in the database
-			Postings.update({_id: postingId}, {$set:{daysBooked: {postingBookings: newBookingsArray}}});
+			if(addedDays){
+				posting = Postings.findOne({_id: postingId});
+				console.log(posting);
+				console.log(posting.daysBooked);
+				console.log(posting.daysBooked.postingBookings);
+				numsDaysBooked = addedDays.length;
+				for(i = 0; i<numDaysBooked; i++){
+					newBooking = {username: currentUsername, booked: addedDays[i]};
+					posting.daysBooked.postingBookings.push(newBooking);	//get current postingBookings array and push newBookings
+					newBookingsArray = posting.daysBooked.postingBookings;	//update postingBookings in the database
+				}
+				Postings.update({_id: postingId}, {$set:{daysBooked: {postingBookings: newBookingsArray}}});
+				Router.go('success');
+			}
 		}
 	});
 
@@ -231,7 +265,7 @@ Router.route('/profile/:createdBy', function(){
 				Accounts.createUser({
 					email: email,
 					username: username,
-					password: password
+					password: password,
 				}, function(error){
 					if(error){
 						if(error.reason == "Email already exists."){
@@ -246,6 +280,13 @@ Router.route('/profile/:createdBy', function(){
 						}	
 					}
 					else {
+						Rentstuff_Users.insert({
+							username: username,
+							email: email,
+							bookings: [],
+							loans: [],
+							saved_postings: []
+						});
 						Router.go('/');
 					}
 				});				
@@ -253,7 +294,7 @@ Router.route('/profile/:createdBy', function(){
 		});
 			
 	});
-
+//
 	Template.login.onRendered(function(){
 		var validator = $('.login').validate({
 			submitHandler: function(event){
@@ -269,7 +310,9 @@ Router.route('/profile/:createdBy', function(){
 						Accounts.createUser({
 						email: email,
 						username: username,
-						password: password
+						password: password,
+						loans: [],
+						bookings: []
 					}, function(error){
 					if(error){
 						if(error.reason == "Email already exists."){
@@ -355,33 +398,41 @@ function toCompactDate(date){
 	return compactDate;
 }
 
-/*Datetimepicker.disabledDate() format to readable date*/
+/*Datepicker format to readable date*/
 function getDate(daysBooked){
 var monthNames = ["January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
 ];
+	readableDate = "";
+	numDaysBooked = daysBooked.length;
 	
-	if(daysBooked[3] != 0){	//if two digit month, concatenate
-		var month = daysBooked[3].concat(daysBooked[4]);
+	for(i = 0; i < numDaysBooked; i++){ //loop through dates
+		if(i > 0){ 							//if adding date, add a comma or "and"
+			if((numDaysBooked - 1) != 1){  	//check if last date,
+				readableDate += ", " 		//if not, only add comma
+			}
+			else { 							//else add "and "
+				readableDate += " and "
+			}
+		}
+		if(daysBooked[i][0] != 0){	//if two digit month, concatenate
+			var month = daysBooked[i][0].concat(daysBooked[1]);
+		}
+		else {
+			var month = daysBooked[i][1];
+		}
+		intmonth = parseInt(month);
+		if(daysBooked[i][3] != 0){ //check if two digit date
+			readableDate += monthNames[intmonth-1] + " " + daysBooked[i][3] + daysBooked[i][4]
+			+ ", " + daysBooked[i][6] + daysBooked[i][7] + daysBooked[i][8] + daysBooked[i][9];
+		} else{	//else only return daysBooked[1] for date
+			readableDate += monthNames[intmonth-1] + " " + daysBooked[i][4]
+			+ ", " + daysBooked[i][6] + daysBooked[i][7] + daysBooked[i][8] + daysBooked[i][9];
+		}
 	}
-	else {
-		var month = daysBooked[4];
-	}
-	intmonth = parseInt(month);
-	if(daysBooked[0] != 0){ //check if two digit date
-	return monthNames[intmonth-1] + " " + daysBooked[0] + daysBooked[1]
-		+ ", " + daysBooked[6] + daysBooked[7] + daysBooked[8] + daysBooked[9];
-}	//else only return daysBooked[1] for date
-	return monthNames[intmonth-1] + " " + daysBooked[1]
-		+ ", " + daysBooked[6] + daysBooked[7] + daysBooked[8] + daysBooked[9];
+	return readableDate;
 }
 
-/* Search Box */
-/*
-	Template.searchbox.helpers({
-		postingsIndex: () => PostingsIndex
-	});
-*/
 /* Image Upload*/
 
 $.cloudinary.config({
@@ -460,25 +511,25 @@ $.cloudinary.config({
 									return timedifference + " year ago";
 							}
 						timedifference = Math.round(timedifference);
-							if (timedifference > 1){
+							if (timedifference != 1){
 							return timedifference + " months ago";
 								}
 							return timedifference + " month ago";
 					}
 					timedifference = Math.round(timedifference);
-					if (timedifference > 1){
+					if (timedifference != 1){
 					return timedifference + " days ago";
 						}
 					return timedifference + " day ago";
 				}
 				timedifference = Math.round(timedifference);
-				if (timedifference > 1){
+				if (timedifference != 1){
 				return timedifference + " hours ago";
 					}
 				return timedifference + " hour ago";
 			}
 			timedifference = Math.round(timedifference);
-			if (timedifference > 1){
+			if (timedifference != 1){
 			return timedifference + " minutes ago";
 				}
 			return timedifference + " minute ago";
@@ -486,87 +537,87 @@ $.cloudinary.config({
 
 	/* Calendar */
 
-Template.calendar.onRendered(function() {
+//Calendar doesn't show on navigation without rendered
+
+Template.calendar.rendered = function(){
 	currentDate = new Date();
-        $('#datetimepicker').datetimepicker({
-        	format: 'DD/MM/YYYY',
-            inline: true,
-            sideBySide: true,
-            useCurrent: true,
-            showClose: true
-        });
-        $('#datetimepicker').data("DateTimePicker").hide();
+	//Get parent datacontext
+	var dataContext = Template.currentData();
+	if (dataContext){
+	console.log(dataContext);
+	//Get postingId from parent context
+	postingId = dataContext._id;
+	console.log(postingId);
+	//find posting
+	posting = Postings.findOne({_id: postingId});
+	console.log(posting.daysBooked);
+	console.log(posting.daysBooked.postingBookings);
+	//Check blocked days by using ._map to put 
+	//booked key values in array blockedDays
+	var blockedDays = posting.daysBooked.postingBookings.map(function(obj){
+		return obj.booked;
+	});	
+	console.log(blockedDays);
+		$('#datepicker').datepicker({
+			container: '#datepicker',
+			startDate: currentDate,
+			clearBtn: true,
+			multidate: true,
+			datesDisabled: blockedDays	//block days booked
+		});
+	}
+}
+
+//Calendar doesn't show on reload without onRendered and helper
+
+Template.calendar.onRendered(function(){
+	$('#datepicker').datepicker({
+		container: '#datepicker',
+		startDate: currentDate,
+		clearBtn: true,
+		multidate: true
+	});	
 });
 
-
 Template.calendar.helpers({
-	blockDates: function() {
-	console.log(this);
-		//wait for datetimepicker to render
-		if($('#datetimepicker').data("DateTimePicker")){
+	blockDates: function(){
 		console.log(this._id);
 		postingId = this._id;
+		if(postingId){
 		posting = Postings.findOne({_id: postingId});
 		console.log(posting.daysBooked);
 		console.log(posting.daysBooked.postingBookings);
 		//Check blocked days by using ._map to put 
-		//booked key in array blockedDays
+		//booked key values in array blockedDays
 		var blockedDays = posting.daysBooked.postingBookings.map(function(obj){
 			return obj.booked;
 		});	
 		console.log(blockedDays);
 		//disable the days in the calendar
-		$('#datetimepicker').data("DateTimePicker").disabledDates(blockedDays);
-    	}	
-    }
+		$('#datepicker').datepicker('setDatesDisabled', blockedDays);
+		}
+	}
 });
 
 Template.calendar.events({
-	'submit form' (event, template){
+	'submit form': function(){
 		event.preventDefault();
+		selected_Dates = $('#datepicker').datepicker('getFormattedDate');
+		console.log(selected_Dates);
+		selected_Dates = selected_Dates.split(','); //split selected_Dates string into
+		console.log(selected_Dates);				//seperate values in an array
 		currentUser = Meteor.userId();
-		currentDate = new Date();
-		dateTime = $('#datetimepicker').data("DateTimePicker").date();	//get date from calendar
-		if(dateTime){
-			if(dateTime < currentDate){			//check if valid date
-				alert('Please pick a valid date');
-				$('#datetimepicker').data("DateTimePicker").date([currentDate]);
-				return;
-			}
-			if(!currentUser){
-				Router.go('/login');
-			}
-			else{
-			dateTime = dateTime.format();
-			dateTime = toCompactDate(dateTime);
-			postingId = this._id;
-			Session.set("daysBooked", dateTime);
-			Router.go('/posting/'+postingId+'/confirm/');
-			}
+		if(!currentUser){
+			Router.go('/login');
 		}
-		else{
+		else if(selected_Dates == ""){
 			alert('Make sure to pick a booking time');
+			}
+		else{
+			postingId = this._id;
+			Session.set("daysBooked", selected_Dates);
+			Router.go('/posting/'+postingId+'/confirm/');
 		}
-	}/*,
-	'click #book-date': function(){
-		event.preventDefault();
-		console.log(this._id);
-		postingId = this._id;
-		posting = Postings.findOne({_id: postingId});
-		console.log(posting.daysBooked);
-		console.log(posting.daysBooked.postingBookings);
-		//Check blocked days by using ._map to put 
-		//booked key in array blockedDays
-		var blockedDays = posting.daysBooked.postingBookings.map(function(obj){
-			return obj.booked;
-		});	
-		console.log(blockedDays);
-		//disable the days in the calendar
-		currentDate = $('#datetimepicker').data("DateTimePicker").date();
-		console.log(currentDate);
-		currentDate = currentDate.format();
-		console.log(currentDate);
-		$('#datetimepicker').data("DateTimePicker").disabledDates([currentDate]);
-		$('#datetimepicker').data("DateTimePicker").disabledDates(blockedDays);		
-	}*/
+	}
 });
+

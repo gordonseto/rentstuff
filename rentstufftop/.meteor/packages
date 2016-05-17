@@ -23,10 +23,8 @@ iron:router
 accounts-ui
 accounts-password
 themeteorchef:jquery-validation
-easy:search
 lepozepo:cloudinary
 session
 mrt:jquery-ui
 twbs:bootstrap
-tsega:bootstrap3-datetimepicker
-u2622:persistent-session
+rajit:bootstrap3-datepicker

@@ -23,7 +23,6 @@
 </template>
 
 <template name="home">
-<!--<p> {{> searchbox}}</p>-->
 <p> {{> displayPostings}}</p>
 </template>
 
@@ -36,23 +35,6 @@
   <div class="image_holder">
   </div>
 </template>
-<!--
-<template name="searchbox">
-  
-  {{> EasySearch.Input index=postingsIndex timeout=300}}
-  <ul>
-    {{#EasySearch.Each index=postingsIndex}}
-      <a href="{{pathFor route='posting'}}">
-      <span class="postPreview">
-      <p>{{title}}</p>
-      <p>Location: {{location}}</p>
-      <p>{{rentalrate}} /day</p>
-      </span>
-      </a>
-    {{/EasySearch.Each}}
-  </ul>
-</template>
--->
 
 <template name="displayPostings">
   {{#each posting}}
@@ -94,20 +76,23 @@
           <img src="{{this}}">
         {{/each}}
       {{/with}}</p>
-      {{> calendar}}
+    {{> calendar}}
+  {{#if isOwner}}
+  <p><a href="{{pathFor route='edit'}}">Edit Posting</a></p>
+  {{/if}}
+  <p><a href="#" class="save-posting">Save Posting</a></p>
+</template>
+
+<template name="edit">
+hi
 </template>
 
 <template name="calendar">
   <form id="book-date">
     <div class="row">
-      <div class="col-xs-8">
+      <div class="col-xs-5">
         <div class="form-group">
-          <div class='input-group date' id='datetimepicker'>
-              <input type='text' class="form-control datetimepicker" data-DateTimePicker>
-              <span class="input-group-addon">             
-                    <span class="glyphicon glyphicon-calendar"></span>
-              </span>
-          </div>
+          <div id="datepicker"></div>
         </div>
       </div>
       <div class="col-xs-4">
@@ -160,6 +145,7 @@
 </template>
 
 <template name="login">
+{{checkIfLoggedIn}}
   <h2>Login</h2>
   <p>If you don't have an account we will create one for you automatically.</p>
   <form class="login">
@@ -189,4 +175,8 @@
     </span>
     </a>
 {{/each}}
+</template>
+
+<template name="success">
+  <p><h2>Booking successful!</h2></p>
 </template>

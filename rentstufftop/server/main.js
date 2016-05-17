@@ -1,4 +1,5 @@
 Postings = new Mongo.Collection('postings');
+Rentstuff_Users = new Mongo.Collection('rentstuff_users');
 
 //Publish usernames
 Meteor.publish('users', function(){
