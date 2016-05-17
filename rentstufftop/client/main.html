@@ -14,7 +14,7 @@
 <template name="navigation" class="navigation">
   <a href="{{pathFor route='newPosting'}}">New Posting</a>
   {{#if currentUser}}
-  <a href="/profile/{{loggedinUser}}">My Account</a>
+  <a href="/profile/{{loggedinUser}}">{{loggedinUser}}</a>
   <a href="#" class="logout">Logout</a>
   {{else}}
   <a href="{{pathFor route='login'}}">Login</a>
@@ -76,9 +76,9 @@
     <p><a href="{{pathFor route='edit'}}">Edit Posting</a></p>
   {{/if}}
   {{#if posting_is_saved}}
-    <p><a href="#" class="posting-saved">Posting Saved</a></p>
+    <p><a class="posting-saved">Posting Saved</a></p>
   {{else}}  
-    <p><a href="#" class="save-posting">Save Posting</a></p>
+    <p><a class="save-posting">Save Posting</a></p>
   {{/if}}
 </template>
 

@@ -98,11 +98,7 @@ Router.route('/profile/:createdBy', function(){
 
 	Template.navigation.helpers({
 		'loggedinUser': function(){
-			user = Meteor.users.findOne({_id: Meteor.userId()});
-			if(user){
-				var username = user.username;
-			}
-			return username;
+			return Meteor.user().username;
 		}
 	});
 
@@ -154,6 +150,7 @@ Router.route('/profile/:createdBy', function(){
 			return false;
 		},
 		'posting_is_saved': function(){
+		if(Meteor.user()){	
 			postingId = this._id;
 			//get meteor username
 			meteorusername = Meteor.user().username;
@@ -162,7 +159,6 @@ Router.route('/profile/:createdBy', function(){
 			//get current saved postings array from user profile
 			if(currentUser){
 			current_saved_postings = currentUser.saved_postings;
-			console.log(current_saved_postings);
 			//check if posting has already been saved
 			var check = current_saved_postings.indexOf(postingId);
 			if(check != -1){
@@ -172,10 +168,15 @@ Router.route('/profile/:createdBy', function(){
 				}
 			}
 		}
+		}
 	});
 
 	Template.posting.events({
 		'click .save-posting': function(){
+			if(!Meteor.userId()){	//if not logged in, redirect to login
+				Router.go('login');
+			}
+			else {
 			postingId = this._id;
 			//get meteor username
 			meteorusername = Meteor.user().username;
@@ -193,6 +194,7 @@ Router.route('/profile/:createdBy', function(){
 			//save new array into rentstuff_users profile
 			Rentstuff_Users.update({_id: currentUser._id}, 
 				{$set:{'saved_postings': current_saved_postings}});
+				}
 			}
 		},
 		'click .posting-saved': function(){
@@ -208,7 +210,7 @@ Router.route('/profile/:createdBy', function(){
 			if(index == -1){
 				return;
 			} else{			
-			//else delete this posting id from array
+			//delete this posting id from array
 			current_saved_postings.splice(index, 1);
 			//save new array into rentstuff_users profile
 			Rentstuff_Users.update({_id: currentUser._id}, 
