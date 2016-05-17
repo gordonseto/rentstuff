@@ -7,4 +7,5 @@
 -edit posting
 -searchbox
 -add payments
--new posting calendar, dates available
+-new posting calendar available dates
+-change thumbnail process

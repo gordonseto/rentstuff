@@ -73,9 +73,13 @@
       {{/each}}</p>
     {{> calendar}}
   {{#if isOwner}}
-  <p><a href="{{pathFor route='edit'}}">Edit Posting</a></p>
+    <p><a href="{{pathFor route='edit'}}">Edit Posting</a></p>
   {{/if}}
-  <p><a href="#" class="save-posting">Save Posting</a></p>
+  {{#if posting_is_saved}}
+    <p><a href="#" class="posting-saved">Posting Saved</a></p>
+  {{else}}  
+    <p><a href="#" class="save-posting">Save Posting</a></p>
+  {{/if}}
 </template>
 
 <template name="edit">
@@ -123,6 +127,8 @@
 
 <template name="profile">
 <p><h1>{{username}}:</h1></p>
+<p><h2>{{#if isOwner}}My {{/if}}Postings:</h2></p>
+<div class="row">
   {{#each posting}}
     <a href="{{pathFor route='posting'}}">
     <span class="postPreview">
@@ -134,6 +140,29 @@
     </span>
     </a>
   {{/each}}
+</div>
+{{>profile_saved_postings}}
+</template>
+
+<template name ="profile_saved_postings">
+{{#if isOwner}}
+<p><h2>Saved postings:</h2></p>
+<div class="row">
+{{#each saved_postings}}
+    {{#with saved_postings_preview}}
+      <a href="{{pathFor route='posting'}}">
+        <span class="postPreview">
+          <p><img src="{{postingImages.[0]}}"></p>
+          <p>{{title}}</p>
+          <p>Location: {{location}}</p>
+          <p>{{rentalrate}} /day</p>
+          <p>Posted {{timedifference}}</p>
+        </span>
+      </a>
+    {{/with}}
+  {{/each}}
+</div>
+{{/if}}
 </template>
 
 <template name="register">

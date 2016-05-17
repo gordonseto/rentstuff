@@ -152,14 +152,70 @@ Router.route('/profile/:createdBy', function(){
 				return this.createdBy == Meteor.user().username;
 			}
 			return false;
+		},
+		'posting_is_saved': function(){
+			postingId = this._id;
+			//get meteor username
+			meteorusername = Meteor.user().username;
+			//meteor username is same as Rentstuff_Users username
+			currentUser = Rentstuff_Users.findOne({username: meteorusername});
+			//get current saved postings array from user profile
+			if(currentUser){
+			current_saved_postings = currentUser.saved_postings;
+			console.log(current_saved_postings);
+			//check if posting has already been saved
+			var check = current_saved_postings.indexOf(postingId);
+			if(check != -1){
+				return true;
+			} else{
+				return false;
+				}
+			}
 		}
 	});
 
 	Template.posting.events({
 		'click .save-posting': function(){
-
+			postingId = this._id;
+			//get meteor username
+			meteorusername = Meteor.user().username;
+			//meteor username is same as Rentstuff_Users username
+			currentUser = Rentstuff_Users.findOne({username: meteorusername});
+			//get current saved postings array from user profile
+			current_saved_postings = currentUser.saved_postings;
+			//check if posting has already been saved
+			var check = current_saved_postings.indexOf(postingId);
+			if(check != -1){
+				return;
+			} else{			
+			//else push this posting id onto array
+			current_saved_postings.push(this._id);
+			//save new array into rentstuff_users profile
+			Rentstuff_Users.update({_id: currentUser._id}, 
+				{$set:{'saved_postings': current_saved_postings}});
+			}
+		},
+		'click .posting-saved': function(){
+			postingId = this._id;
+			//get meteor username
+			meteorusername = Meteor.user().username;
+			//meteor username is same as Rentstuff_Users username
+			currentUser = Rentstuff_Users.findOne({username: meteorusername});
+			//get current saved postings array from user profile
+			current_saved_postings = currentUser.saved_postings;
+			//find index of posting in array
+			var index = current_saved_postings.indexOf(postingId);
+			if(index == -1){
+				return;
+			} else{			
+			//else delete this posting id from array
+			current_saved_postings.splice(index, 1);
+			//save new array into rentstuff_users profile
+			Rentstuff_Users.update({_id: currentUser._id}, 
+				{$set:{'saved_postings': current_saved_postings}});
+			}
 		}
-	})
+	});
 
 	Template.confirm.helpers({
 		'posting': function(){
@@ -211,6 +267,35 @@ Router.route('/profile/:createdBy', function(){
 			currentDate = new Date();
 
 			return getTimeDifference(postedDate, currentDate);
+		},
+		isOwner: function(){
+			if(Meteor.user()){
+				return this.username == Meteor.user().username;
+			}
+			return false;
+		}
+	});
+
+	Template.profile_saved_postings.helpers({
+		isOwner: function(){
+			if(Meteor.user()){
+				return this.username == Meteor.user().username;
+			}
+			return false;
+		},
+		'saved_postings': function(){
+			meteorusername = Meteor.user().username;
+			//meteor username is same as Rentstuff_Users username
+			currentUser = Rentstuff_Users.findOne({username: meteorusername});
+			if(currentUser){
+			//get current saved postings array from user profile
+			current_saved_postings = currentUser.saved_postings;
+			return current_saved_postings.reverse();		
+			}
+		},
+		'saved_postings_preview': function(){
+			postingId = this.valueOf();
+			return Postings.findOne({_id: postingId});
 		}
 	});
 
@@ -256,6 +341,7 @@ Router.route('/profile/:createdBy', function(){
 		'click .delete-image': function(){
 			event.preventDefault();
 			console.log(this);
+			console.log(parentData(1));
 			deleteImage = this;	//get image url to delete
 			deleteImage = deleteImage.valueOf(); 
 			var parentthis = Template.parentData(1); //get parent context
@@ -405,6 +491,13 @@ Router.route('/profile/:createdBy', function(){
 						}	
 					}
 					else {
+						Rentstuff_Users.insert({
+							username: username,
+							email: email,
+							bookings: [],
+							loans: [],
+							saved_postings: []
+						});						
 						Router.go(Session.get("previousLocationPath"));
 					}
 				});
