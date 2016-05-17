@@ -40,10 +40,7 @@
   {{#each posting}}
     <a href="{{pathFor route='posting'}}">
     <span class="postPreview">
-        <p>{{#with postingImages}}
-              <img src="{{imageId.[0]}}">
-            {{/with}}
-        </p>
+    <p><img src="{{postingImages.[0]}}"></p>
     <p>{{title}}</p>
     <p>Location: {{location}}</p>
     <p>{{rentalrate}} /day</p>
@@ -71,11 +68,9 @@
   <p>Location: {{location}}</p>
   <p>Rental rate: {{rentalrate}} /day</p>
   <p>Posted {{timedifference}}</p>
-  <p> {{#with postingImages}}
-        {{#each imageId}}
-          <img src="{{this}}">
-        {{/each}}
-      {{/with}}</p>
+  <p> {{#each postingImages}}
+          <p><img src="{{this}}"></p>
+      {{/each}}</p>
     {{> calendar}}
   {{#if isOwner}}
   <p><a href="{{pathFor route='edit'}}">Edit Posting</a></p>
@@ -84,7 +79,17 @@
 </template>
 
 <template name="edit">
-hi
+  <form>
+  <p>Title: <input type="text" name="title" value="{{title}}" required></p>
+  <p>Description: <input type="text" name="description" value="{{description}}"></p>
+  <p>Location: <input type="text" name="location" value="{{location}}" required></p>
+  <p>Rental rate: <input type="text" name="rentalrate" value="{{rentalrate}}" required> /day</p>
+  <p> {{#each postingImages}}
+          <p><img src="{{this}}"><a href='#' class="delete-image">[delete]</a></p>
+      {{/each}}</p>
+  <p>{{> imageupload}}</p>
+  <p><input type="submit" value="Save"></p>
+  </form>
 </template>
 
 <template name="calendar">
@@ -121,10 +126,7 @@ hi
   {{#each posting}}
     <a href="{{pathFor route='posting'}}">
     <span class="postPreview">
-      <p>{{#with postingImages}}
-          <img src="{{imageId.[0]}}">
-          {{/with}}
-      </p>
+    <p><img src="{{postingImages.[0]}}"></p>
     <p>{{title}}</p>
     <p>Location: {{location}}</p>
     <p>{{rentalrate}} /day</p>

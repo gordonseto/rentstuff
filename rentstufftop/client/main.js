@@ -44,15 +44,14 @@ Router.route('/posting/:postingId/confirm',function(){
 		name: 'confirm'
 });
 
-Router.route('/posting/:_id/edit',function(){
-	this.render('edit',{
-		data: {
-			postingId: this.params.postingId
-			},
-		});
-	},{
-		name: 'edit'
-});
+Router.route('/posting/:_id/edit',{
+	name: 'edit',
+	template: 'edit',
+	data: function(){		//retrieves current posting id,
+		var currentPosting = this.params._id; //returns posting info
+		return Postings.findOne({_id: currentPosting});
+		}
+	});
 
 Router.route('/success', {
 	name: 'success'
@@ -235,10 +234,10 @@ Router.route('/profile/:createdBy', function(){
 			var description = $('[name="description"]').val();
 			var location = $('[name="location"]').val();
 			var rentalrate = $('[name="rentalrate"]').val();
-			var postingImages = Session.get("selected_images");
-			if (postingImages == null){
-				postingImages = { imageId: []}
-			}
+			var postingImages = [];
+			$(".image_holder img").each(function(){
+				postingImages.push(this.src);	//get images from DOM
+			})
 			var bookingsArray = [];
 			var results = Postings.insert({title: title,
 							description: description,
@@ -253,8 +252,87 @@ Router.route('/profile/:createdBy', function(){
 			});
 			Session.set("selected_images", null);	
 			Router.go('posting', {_id: results});
+		},
+		'click .delete-image': function(){
+			event.preventDefault();
+			console.log(this);
+			deleteImage = this;	//get image url to delete
+			deleteImage = deleteImage.valueOf(); 
+			var parentthis = Template.parentData(1); //get parent context
+			var postingImages = parentthis.postingImages; //get postingImages
+			//find item in array
+			var deleteImage_index = postingImages.indexOf(deleteImage);
+			//delete item from array
+			if(deleteImage_index != -1){
+				postingImages.splice(deleteImage_index, 1);
+			}
+			console.log(postingImages);
+			//edit saved postingImages object in database
+			//Postings.update({_id: parentthis._id}, {$set: {'postingImages': postingImages}});
 		}
 	});
+
+	Template.edit.events({
+		'submit form': function(){
+			event.preventDefault();
+			var currentUser = Meteor.userId();
+			user = Meteor.users.findOne({_id: currentUser});
+			if (user){
+				var currentUsername = user.username;
+			}
+			var postingId = this._id;
+			var title = $('[name="title"]').val();
+			var description = $('[name="description"]').val();
+			var location = $('[name="location"]').val();
+			var rentalrate = $('[name="rentalrate"]').val();
+			var postingImages = this.postingImages;
+			console.log(postingImages);
+			if(Session.get("selected_images")){			//if adding more images, 
+				addedImages = Session.get("selected_images").imageId;
+				if(postingImages.imageId == null){		//check if previous images, if not no push
+					postingImages = Session.get("selected_images"); //making postingImages imageupload object
+					console.log(postingImages);
+				}
+				else{		//if there is a previous postingImages object, push addedImages onto array
+					postingImages.imageId.push(addedImages);
+					console.log(postingImages);
+				}
+			}
+			var bookingsArray = this.daysBooked.postingBookings;
+			var createdAt = this.createdAt;
+			Postings.update({_id: postingId},{$set: {title: title,
+							description: description,
+							location: location,
+							rentalrate: rentalrate,
+							createdAt: createdAt,
+							createdBy: currentUsername,
+							postingImages: postingImages,
+							daysBooked: daysBooked = {
+								postingBookings: bookingsArray
+							}
+			}});
+			Session.set("selected_images", null);	
+			Router.go('/posting/'+postingId);
+		},
+		'click .delete-image': function(){
+			event.preventDefault();
+			console.log(this);
+			deleteImage = this;	//get image url to delete
+			deleteImage = deleteImage.valueOf(); 
+			var parentthis = Template.parentData(1); //get parent context
+			var postingImages = parentthis.postingImages; //get postingImages
+			//find item in array
+			var deleteImage_index = postingImages.indexOf(deleteImage);
+			//delete item from array
+			if(deleteImage_index != -1){
+				postingImages.splice(deleteImage_index, 1);
+			}
+			console.log(postingImages);
+			//edit saved postingImages object in database
+			//Postings.update({_id: parentthis._id}, {$set: {'postingImages': postingImages}});
+		}
+	});
+
 
 		Template.register.onRendered(function(){
 		var validator = $('.register').validate({
@@ -438,7 +516,7 @@ var monthNames = ["January", "February", "March", "April", "May", "June",
 $.cloudinary.config({
 	cloud_name: "gordonseto"
 });
-
+//
 	Template.imageupload.events({
 		//Submit form event
 		'submit form': function(event, t){
@@ -447,7 +525,7 @@ $.cloudinary.config({
 			var imageArray = [];
 			console.log(imageArray);
 			var numuploads = $("#postingimages input").length; //count how many images to upload
-			
+			console.log(numuploads);
 			for(i = 1; i < numuploads+1; i++){ //loop through images
 
 			var files = []
@@ -461,27 +539,19 @@ $.cloudinary.config({
 					console.log(error);
 					return;
 				}
-				var imageId = res.secure_url;
+				var imageurl = res.secure_url;
 				console.log(res);
 				console.log(res.public_id);
-				imageArray.push(imageId);
+				imageArray.push(imageurl);
 				console.log(imageArray);
 				$('.image_holder').append(
-					$.cloudinary.image(res.public_id)
-					);
-				});
+				"<p><img src="+imageurl+"><a href='#' class='delete-image'>[delete]</a></p>"
+				);
+			});
 			}
 		}
-			setTimeout(function(){
-				console.log(imageArray);
-				var postingImages = {
-					imageId: imageArray
-				}
-				Session.set("selected_images", postingImages);
-				console.log(Session.get("selected_images"));
-			},numuploads*1000);
-		}
-	});
+	}
+});
 
 /*Time Difference Function*/
 
@@ -620,4 +690,3 @@ Template.calendar.events({
 		}
 	}
 });
-
