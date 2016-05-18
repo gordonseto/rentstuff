@@ -56,6 +56,20 @@
   <p>Description: <input type="text" name="description"></p>
   <p>Location: <input type="text" name="location" required></p>
   <p>Rental rate: <input type="text" name="rentalrate" required> /day</p>
+    <div class="row">
+      <div class="col-xs-5">
+        <div class="form-group">
+          <div id="datepicker"></div>
+        </div>
+      </div>
+      <div class="col-xs-6">
+      <br><br><br>
+      <p><input type="checkbox" id="all-dates" value="All dates"> All Dates</p>
+      <p><input type="checkbox" id="1" value="All dates"> All Dates</p>
+      <p><input type="checkbox" id="2" value="All dates"> All Dates</p>
+      <p><input type="checkbox" id="3" value="All dates"> All Dates</p>
+      </div>
+    </div>
   <p>{{> imageupload}}</p>
   <p><input type="submit" value="Post"></p>
   </form>
@@ -103,6 +117,7 @@
         <div class="form-group">
           <div id="datepicker"></div>
         </div>
+      <p><em>Equipment can only be booked up to one year ahead.</em></p>
       </div>
       <div class="col-xs-4">
         <div class="form-group">

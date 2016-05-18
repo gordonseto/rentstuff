@@ -250,6 +250,15 @@ Router.route('/profile/:createdBy', function(){
 				console.log(posting);
 				console.log(posting.daysBooked);
 				console.log(posting.daysBooked.postingBookings);
+				//Update account loaning
+				//meteor username is same as rentstuff username
+				postingOwner = posting.createdBy;
+				console.log(postingOwner);
+				postingOwner = Rentstuff_Users.findOne({username: postingOwner});
+				console.log(postingOwner);
+				//get current loans array
+				loansArray = postingOwner.loans;
+				console.log(loansArray);
 				//loop through number of days booked
 				numsDaysBooked = addedDays.length;
 				for(i = 0; i<numDaysBooked; i++){
@@ -257,9 +266,15 @@ Router.route('/profile/:createdBy', function(){
 					newBooking = {postingId: postingId, username: currentUsername, booked: addedDays[i]};
 					//push newBooking onto previous saved array
 					posting.daysBooked.postingBookings.push(newBooking);	
-					newBookingsArray = posting.daysBooked.postingBookings;	
+					newBookingsArray = posting.daysBooked.postingBookings;
+					//insert newBooking into posting owner's loansArray
+					loansArray = insert(newBooking, loansArray);
+					console.log(loansArray);
 				}	//update postingBookings in the database
 				Postings.update({_id: postingId}, {$set:{daysBooked: {postingBookings: newBookingsArray}}});
+				//update posting owner's loans array
+				console.log(postingOwner._id);
+				Rentstuff_Users.update({_id: postingOwner._id}, {$set:{loans: loansArray}})
 				//Update account booking
 				//meteor username is same as Rentstuff_Users username
 				currentUser = Rentstuff_Users.findOne({username: currentUsername});
@@ -282,11 +297,38 @@ Router.route('/profile/:createdBy', function(){
 				//save new array into rentstuff_users profile
 				Rentstuff_Users.update({_id: currentUser._id}, 
 				{$set:{bookings: current_bookings}});
+				}	
 				Router.go('success');
-				}
 			}
 		}
 	});
+
+
+/*Insert Function for profile loanings*/
+function insert(element, array){
+	array.splice(locationOf(element,array) + 1, 0, element);
+	return array;
+}
+
+/*Quicksort Function for profile loanings*/
+function locationOf(element, array, start, end){
+	if(array.length === 0)
+	return -1;
+
+	start = start || 0;
+	end = end || array.length;
+	var pivot = parseInt(start + (end-start) / 2, 10);
+	if(new Date(array[pivot].booked).getTime() === new Date(element.booked).getTime())
+		return pivot;
+	if(end-start <=1) 
+		return new Date(array[pivot].booked).getTime() > new Date(element.booked).getTime() ? pivot - 1 : pivot;
+	if(new Date(array[pivot].booked).getTime() < new Date(element.booked).getTime()){
+		return locationOf(element,	array,	pivot,	end);
+	}else{
+		return locationOf(element, array, start, pivot);
+	}
+}
+
 
 	Template.profile.helpers({
 		'posting': function(){
@@ -310,26 +352,18 @@ Router.route('/profile/:createdBy', function(){
 
 	Template.profile_loans.helpers({
 		'loans': function(){
-			currentUser = Meteor.user().username;
-			var loans = [];
-			//find all bookings owned by current user
-			var cursor = Postings.find({createdBy: currentUser});
-			cursor.forEach(function(doc){	//iterate through cursor
-				console.log(doc.daysBooked.postingBookings);
-				if(doc.daysBooked.postingBookings.length != 0){	//only check postings with bookings
-					loansArray = doc.daysBooked.postingBookings;
-					for(i = 0; i < loansArray.length; i++) {//iterate through array of object
-						//insert each object into bookings array, function will sort
-						console.log(loansArray[i]);	
-						loans = insert(loansArray[i], loans);
-					}
-				}
-			})
+			meteorusername = Meteor.user().username;
+			//meteor username is same as Rentstuff_Users username
+			currentUser = Rentstuff_Users.findOne({username: meteorusername});
+			console.log(currentUser);
+			if(currentUser){
+			//get current saved postings array from user profile
+			loans = currentUser.loans;
+			}
 			return loans;
 		},
 		'loans_preview': function(){
 			postingId = this.postingId;
-			console.log(postingId);
 			if(postingId){
 				return Postings.findOne({_id: postingId});
 			}
@@ -342,27 +376,6 @@ Router.route('/profile/:createdBy', function(){
 			}
 		}
 	});
-
-/*Insert Function*/
-function insert(element, array){
-	array.splice(locationOf(element,array) + 1, 0, element);
-	return array;
-}
-
-/*Quicksort Function*/
-function locationOf(element, array, start, end){
-	start = start || 0;
-	end = end || array.length;
-	var pivot = parseInt(start+ (end-start) / 2, 10);
-	if(end-start <=1 || (new Date(array[pivot].booked).getTime() === new Date(element.booked).getTime())) 
-		return pivot;
-	if(new Date(array[pivot].booked).getTime() < new Date(element.booked).getTime()){
-		return locationOf(element,	array,	pivot,	end);
-	}else{
-		return locationOf(element, array, start, pivot);
-	}
-}
-
 
 	Template.profile_bookings.helpers({
 		'bookings': function(){
@@ -427,6 +440,8 @@ function locationOf(element, array, start, end){
 			$(".image_holder img").each(function(){
 				postingImages.push(this.src);	//get images from DOM
 			})
+			daysAvailable = $('#datepicker').datepicker('getFormattedDate');
+			console.log(daysAvailable)
 			var bookingsArray = [];
 			var results = Postings.insert({title: title,
 							description: description,
@@ -437,7 +452,8 @@ function locationOf(element, array, start, end){
 							postingImages: postingImages,
 							daysBooked: daysBooked = {
 								postingBookings: []
-							}
+							},
+							daysAvailable: daysAvailable
 			});
 			Session.set("selected_images", null);	
 			Router.go('posting', {_id: results});
@@ -459,6 +475,15 @@ function locationOf(element, array, start, end){
 			console.log(postingImages);
 			//edit saved postingImages object in database
 			//Postings.update({_id: parentthis._id}, {$set: {'postingImages': postingImages}});
+		},
+		'click #all-dates': function(){
+			var checkbox = $(this);
+			console.log(checkbox);
+			if (checkbox.is(':checked')) {	//checkbox was checked
+				console.log('hi');
+			} else{						//check box was unchecked
+				console.log('yo');
+			}
 		}
 	});
 
@@ -644,7 +669,6 @@ function locationOf(element, array, start, end){
 			}
 	});
 
-
 /*Username from email*/
 function getUsername(email){
 	var username = "";
@@ -805,10 +829,26 @@ $.cloudinary.config({
 
 	/* Calendar */
 
+Template.newPosting.onRendered(function(){
+	currentDate = new Date();
+	oneYear = new Date();
+	oneYear.setYear(currentDate.getFullYear()+1);
+	$('#datepicker').datepicker({
+		container: '#datepicker',
+		clearBtn: true,
+		startDate: currentDate,
+		endDate: oneYear,
+		title: "Available Dates:",
+		multidate: true
+	});	
+})
+
 //Calendar doesn't show on navigation without rendered
 
 Template.calendar.rendered = function(){
 	currentDate = new Date();
+	oneYear = new Date();
+	oneYear.setYear(currentDate.getFullYear()+1);
 	//Get parent datacontext
 	var dataContext = Template.currentData();
 	if (dataContext){
@@ -829,6 +869,7 @@ Template.calendar.rendered = function(){
 		$('#datepicker').datepicker({
 			container: '#datepicker',
 			startDate: currentDate,
+			endDate: oneYear,
 			clearBtn: true,
 			multidate: true,
 			datesDisabled: blockedDays	//block days booked
@@ -839,9 +880,12 @@ Template.calendar.rendered = function(){
 //Calendar doesn't show on reload without onRendered and helper
 
 Template.calendar.onRendered(function(){
+	oneYear = new Date();
+	oneYear.setYear(currentDate.getFullYear()+1);
 	$('#datepicker').datepicker({
 		container: '#datepicker',
 		startDate: currentDate,
+		endDate: oneYear,
 		clearBtn: true,
 		multidate: true
 	});	
