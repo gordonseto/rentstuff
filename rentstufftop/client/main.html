@@ -128,6 +128,7 @@
 <template name="profile">
 <p><h1>{{username}}:</h1></p>
 {{#if isOwner}}
+  {{> profile_loans}}
   {{> profile_bookings}}
 {{/if}}
 <p><h2>{{#if isOwner}}My {{/if}}Postings:</h2></p>
@@ -146,6 +147,31 @@
 </div>
 {{#if isOwner}}
 {{> profile_saved_postings}}
+{{/if}}
+</template>
+
+<template name="profile_loans">
+{{#if loans}}
+<h2>My upcoming loans:</h2>
+{{#each loans}}
+<div class='row'>
+<div class='col-xs-3'>
+<p>{{loans_preview_days}}:</p>
+  <a href="/profile/{{username}}">{{username}}</a> renting
+  {{#with loans_preview}}
+      <a href="{{pathFor route='posting'}}">
+        <span class="postPreview">
+          <p><img src="{{postingImages.[0]}}"></p>
+          <p>{{title}}</p>
+          <p>Location: {{location}}</p>
+          <p>{{rentalrate}} /day</p>
+          <p>Posted {{timedifference}}</p>
+        </span>
+      </a>
+  {{/with}}
+</div>
+</div>
+{{/each}}
 {{/if}}
 </template>
 
@@ -174,6 +200,7 @@
 </template>
 
 <template name ="profile_saved_postings">
+{{#if saved_postings}}
 <p><h2>Saved postings:</h2></p>
 <div class="row">
 {{#each saved_postings}}
@@ -190,6 +217,7 @@
     {{/with}}
   {{/each}}
 </div>
+{{/if}}
 </template>
 
 <template name="register">

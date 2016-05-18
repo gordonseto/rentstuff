@@ -254,7 +254,7 @@ Router.route('/profile/:createdBy', function(){
 				numsDaysBooked = addedDays.length;
 				for(i = 0; i<numDaysBooked; i++){
 					//make new object "newBooking" with username and addedDays
-					newBooking = {username: currentUsername, booked: addedDays[i]};
+					newBooking = {postingId: postingId, username: currentUsername, booked: addedDays[i]};
 					//push newBooking onto previous saved array
 					posting.daysBooked.postingBookings.push(newBooking);	
 					newBookingsArray = posting.daysBooked.postingBookings;	
@@ -307,6 +307,62 @@ Router.route('/profile/:createdBy', function(){
 			return false;
 		}
 	});
+
+	Template.profile_loans.helpers({
+		'loans': function(){
+			currentUser = Meteor.user().username;
+			var loans = [];
+			//find all bookings owned by current user
+			var cursor = Postings.find({createdBy: currentUser});
+			cursor.forEach(function(doc){	//iterate through cursor
+				console.log(doc.daysBooked.postingBookings);
+				if(doc.daysBooked.postingBookings.length != 0){	//only check postings with bookings
+					loansArray = doc.daysBooked.postingBookings;
+					for(i = 0; i < loansArray.length; i++) {//iterate through array of object
+						//insert each object into bookings array, function will sort
+						console.log(loansArray[i]);	
+						loans = insert(loansArray[i], loans);
+					}
+				}
+			})
+			return loans;
+		},
+		'loans_preview': function(){
+			postingId = this.postingId;
+			console.log(postingId);
+			if(postingId){
+				return Postings.findOne({_id: postingId});
+			}
+		},
+		'loans_preview_days': function(){
+			booked = this.booked;
+			if(booked){	
+				//getDate takes an array of dates
+				return getDate([booked]);
+			}
+		}
+	});
+
+/*Insert Function*/
+function insert(element, array){
+	array.splice(locationOf(element,array) + 1, 0, element);
+	return array;
+}
+
+/*Quicksort Function*/
+function locationOf(element, array, start, end){
+	start = start || 0;
+	end = end || array.length;
+	var pivot = parseInt(start+ (end-start) / 2, 10);
+	if(end-start <=1 || (new Date(array[pivot].booked).getTime() === new Date(element.booked).getTime())) 
+		return pivot;
+	if(new Date(array[pivot].booked).getTime() < new Date(element.booked).getTime()){
+		return locationOf(element,	array,	pivot,	end);
+	}else{
+		return locationOf(element, array, start, pivot);
+	}
+}
+
 
 	Template.profile_bookings.helpers({
 		'bookings': function(){

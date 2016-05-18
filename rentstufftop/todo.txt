@@ -1,5 +1,4 @@
 -booking collisions
--account loanings
 -take off autopublish and insecure
 -login and register page fix when already a user
 -edit posting
@@ -8,3 +7,4 @@
 -new posting calendar available dates
 -change thumbnail process
 -fix profile bookings order
+-profile calendars for days booked and loans
