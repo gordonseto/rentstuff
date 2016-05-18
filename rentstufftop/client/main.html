@@ -23,7 +23,28 @@
 </template>
 
 <template name="home">
-<p> {{> displayPostings}}</p>
+<p> {{> searchbox}} </p>
+</template>
+
+<template name="searchbox">
+<form>
+  <input type="text" id="search-box">
+</form>
+{{#if getPostings}}
+{{#each getPostings}}
+    <a href="{{pathFor route='posting'}}">
+    <span class="postPreview">
+    <p><img src="{{postingImages.[0]}}"></p>
+    <p>{{{title}}}</p>
+    <p>Location: {{{location}}}</p>
+    <p>{{{rentalrate}}} /day</p>
+    <p>Posted {{{timedifference}}}</p>
+    </span>
+    </a>
+{{/each}}
+{{else}}
+{{> displayPostings}}
+{{/if}}
 </template>
 
 <template name="imageupload">

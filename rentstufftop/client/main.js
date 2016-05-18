@@ -8,11 +8,21 @@
 	meteor add mrt:jquery-ui					add jquery-ui
 	meteor add twbs:bootstrap					for bootstrap 3
 	meteor add rajit:bootstrap3-datepicker 		for calendar
+	meteor add meteorhacks:search-source		for searchbox
 */	
 
 
 Postings = new Mongo.Collection('postings');
 Rentstuff_Users = new Mongo.Collection('rentstuff_users');
+
+//Search box
+var options = {
+	keepHistory: 1000*60*5,
+	localSearch: true
+};
+var fields = ['title', 'description', 'location', 'rentalrate'];
+
+PostingsSearch = new SearchSource('postings', fields, options);
 
 //Subscribe to usernames
 Meteor.subscribe("users");
@@ -96,6 +106,12 @@ Router.route('/profile/:createdBy', function(){
 		name: 'profile'
 });
 
+	Template.ApplicationLayout.events({
+		'click a': function(){
+			PostingsSearch.search(null);
+		}
+	})
+
 	Template.navigation.helpers({
 		'loggedinUser': function(){
 			return Meteor.user().username;
@@ -126,6 +142,26 @@ Router.route('/profile/:createdBy', function(){
 
 			return getTimeDifference(postedDate, currentDate);
 		}
+	});
+
+	Template.searchbox.helpers({
+  		getPostings: function() {
+    		return PostingsSearch.getData({
+      			transform: function(matchText, regExp) {
+        			return matchText;
+      			},
+      			sort: {isoScore: -1}
+    			});
+  		}
+	});
+
+	Template.searchbox.events({
+    	'keyup #search-box': function(event) {
+    		setTimeout(function(){
+        		var text = $(event.target).val().trim();
+        		PostingsSearch.search(text);
+ 			}, 100);
+    	}
 	});
 
 	Template.posting.helpers({
