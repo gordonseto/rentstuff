@@ -252,6 +252,10 @@ Router.route('/profile/:createdBy', function(){
 			Rentstuff_Users.update({_id: currentUser._id}, 
 				{$set:{'saved_postings': current_saved_postings}});
 			}
+		},
+		'click .bump': function(){
+			createdAt = new Date();
+			Postings.update({_id: this._id}, {$set: {createdAt: createdAt}});
 		}
 	});
 
