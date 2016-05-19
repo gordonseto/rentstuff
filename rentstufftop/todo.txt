@@ -1,3 +1,4 @@
+googe maps api key: AIzaSyCxnXWYmJJy6qeEEOFLf86bqK1vVw3t6ZA
 -booking collisions
 -take off autopublish and insecure
 -login and register page fix when already a user
@@ -9,3 +10,4 @@
 -fix profile bookings order
 -profile calendars for days booked and loans
 -make new pages when front page too big
+-add maps

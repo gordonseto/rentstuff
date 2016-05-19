@@ -26,7 +26,15 @@
 <p> {{> searchbox}} </p>
 </template>
 
+<template name="map">
+{{test}}
+<div class="map-container">
+  {{> googleMap name="map" options=mapOptions}}
+</div>
+</template>
+
 <template name="searchbox">
+<p>{{> map}}</p>
 <form>
   <input type="text" id="search-box">
 </form>
@@ -76,6 +84,7 @@
   <p>Title: <input type="text" name="title" required></p>
   <p>Description: <input type="text" name="description"></p>
   <p>Location: <input type="text" name="location" required></p>
+  <p>Address: <input type="text" name="address" required></p>
   <p>Rental rate: <input type="text" name="rentalrate" required> /day</p>
     <div class="row">
       <div class="col-xs-5">
@@ -96,17 +105,27 @@
   </form>
 </template>
 
+<template name="posting_map">
+<div class="posting-map-container">
+  {{> googleMap name="map" options=mapOptions}}
+</div>
+</template>
+
 <template name="posting">
   <p>Title: {{title}}</p>
   <p>Posted by: <a href="{{pathFor route='profile'}}">{{createdBy}}</a></p>
   <p>Description: {{description}}</p>
   <p>Location: {{location}}</p>
+  <p>Address: {{address}}</p>
   <p>Rental rate: {{rentalrate}} /day</p>
   <p>Posted {{timedifference}}</p>
   <p> {{#each postingImages}}
           <p><img src="{{this}}"></p>
       {{/each}}</p>
     {{> calendar}}
+  {{#if geocode_address}}
+  {{> posting_map}}
+  {{/if}}
   {{#if isOwner}}
     <p><a href="{{pathFor route='edit'}}">Edit Posting</a></p>
     <p><a class='bump'>Bump Posting</a></p>

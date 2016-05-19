@@ -24,6 +24,11 @@ var fields = ['title', 'description', 'location', 'rentalrate'];
 
 PostingsSearch = new SearchSource('postings', fields, options);
 
+//Maps function
+Meteor.startup(function() {
+	GoogleMaps.load();
+});
+
 //Subscribe to usernames
 Meteor.subscribe("users");
 
@@ -144,6 +149,29 @@ Router.route('/profile/:createdBy', function(){
 		}
 	});
 
+	Template.map.helpers({
+		mapOptions: function(){
+			if (GoogleMaps.loaded()){
+				return {
+					center: new google.maps.LatLng(51.1389, -114.162),
+					zoom: 14
+				};
+			}
+		}
+	});
+
+	Template.map.onCreated(function() {
+  		// We can use the `ready` callback to interact with the map API once the map is ready.
+  		GoogleMaps.ready('map', function(map) {
+    		// Add a marker to the map once it's ready
+    		position = searchAddress();
+    		var marker = new google.maps.Marker({
+    			position: {lat: position.lat, lng: position.lng},
+    			map: map.instance
+    		});
+  		});
+	});
+
 	Template.searchbox.helpers({
   		getPostings: function() {
     		return PostingsSearch.getData({
@@ -257,6 +285,31 @@ Router.route('/profile/:createdBy', function(){
 			createdAt = new Date();
 			Postings.update({_id: this._id}, {$set: {createdAt: createdAt}});
 		}
+	});
+
+	Template.posting_map.helpers({
+		mapOptions: function(){
+			if (GoogleMaps.loaded()){
+				return {
+					center: new google.maps.LatLng(this.geocode_address.lat, this.geocode_address.lng),
+					zoom: 11
+				};
+			}
+		}
+	});
+
+	Template.posting_map.onCreated(function() {
+		//Get data context
+		thiscontext = Template.currentData();
+  		// We can use the `ready` callback to interact with the map API once the map is ready.
+  		GoogleMaps.ready('map', function(map) {
+    		// Add a marker to the map once it's ready
+    		position = searchAddress();
+    		var marker = new google.maps.Marker({
+    			position: {lat: thiscontext.geocode_address.lat, lng: thiscontext.geocode_address.lng},
+    			map: map.instance
+    		});
+  		});
 	});
 
 	Template.confirm.helpers({
@@ -475,6 +528,7 @@ function locationOf(element, array, start, end){
 			var title = $('[name="title"]').val();
 			var description = $('[name="description"]').val();
 			var location = $('[name="location"]').val();
+			var address = $('[name="address"]').val();
 			var rentalrate = $('[name="rentalrate"]').val();
 			var postingImages = [];
 			$(".image_holder img").each(function(){
@@ -483,9 +537,12 @@ function locationOf(element, array, start, end){
 			daysAvailable = $('#datepicker').datepicker('getFormattedDate');
 			console.log(daysAvailable)
 			var bookingsArray = [];
-			var results = Postings.insert({title: title,
+			searchAddress(address, function(geocode_address){
+				var results = Postings.insert({title: title,
 							description: description,
 							location: location,
+							address: address,
+							geocode_address: geocode_address,
 							rentalrate: rentalrate,
 							createdAt: new Date(),
 							createdBy: currentUsername,
@@ -494,9 +551,10 @@ function locationOf(element, array, start, end){
 								postingBookings: []
 							},
 							daysAvailable: daysAvailable
+				});
+				Session.set("selected_images", null);	
+				Router.go('posting', {_id: results});
 			});
-			Session.set("selected_images", null);	
-			Router.go('posting', {_id: results});
 		},
 		'click .delete-image': function(){
 			event.preventDefault();
@@ -708,6 +766,37 @@ function locationOf(element, array, start, end){
 				}
 			}
 	});
+
+/* Google Maps Geocode*/
+function searchAddress(addressInput, fn){
+	var geocoder = new google.maps.Geocoder();
+	geocoder.geocode({'address': addressInput}, function(results, status){
+		if(status == google.maps.GeocoderStatus.OK){
+			lat = results[0].geometry.location.lat();
+			lng = results[0].geometry.location.lng();
+			console.log(lat);
+			console.log(lng);
+			var latlng = {lat: lat, lng: lng};
+			fn(latlng);
+		} else{
+			//warning message
+			console.log(status);
+		}
+	});
+}
+
+function createMarker(latlng){
+	//If the user makes another search you must clear the marker variable
+	if(marker != undefined && marker != ''){
+		market.setMap(null);
+		marker = '';
+	}
+
+	marker = new google.maps.Marker({
+		map: map,
+		position: latlng
+	})
+}
 
 /*Username from email*/
 function getUsername(email){
