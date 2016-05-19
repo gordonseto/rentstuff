@@ -9,11 +9,16 @@
 	meteor add twbs:bootstrap					for bootstrap 3
 	meteor add rajit:bootstrap3-datepicker 		for calendar
 	meteor add meteorhacks:search-source		for searchbox
+	meteor add dburles:google-maps				for maps
+	meteor add doctorpangloss:filter-collections for filters
+	meteor add ejson
 */	
 
 
 Postings = new Mongo.Collection('postings');
 Rentstuff_Users = new Mongo.Collection('rentstuff_users');
+//Client-Only Collection
+Temporary_Markers = new Mongo.Collection(null);
 
 //Search box
 var options = {
@@ -149,28 +154,72 @@ Router.route('/profile/:createdBy', function(){
 		}
 	});
 
-	Template.map.helpers({
+	Template.filter.helpers({
 		mapOptions: function(){
 			if (GoogleMaps.loaded()){
-				return {
-					center: new google.maps.LatLng(51.1389, -114.162),
-					zoom: 14
+				map = {
+					center: new google.maps.LatLng(51.0486151, -114.0708459),
+					zoom: 11
 				};
+				return map;
 			}
 		}
 	});
 
-	Template.map.onCreated(function() {
+	Template.filter.onCreated(function() {
   		// We can use the `ready` callback to interact with the map API once the map is ready.
   		GoogleMaps.ready('map', function(map) {
-    		// Add a marker to the map once it's ready
-    		position = searchAddress();
-    		var marker = new google.maps.Marker({
-    			position: {lat: position.lat, lng: position.lng},
-    			map: map.instance
+  			var markers = {};
+    		// Add markers to the map once it's ready from
+    		//temporary_markers collection
+    		Temporary_Markers.find().observe({
+    			added: function(document){
+    				var marker = new google.maps.Marker({
+    					position: new google.maps.LatLng(document.lat, document.lng),
+    					animation: google.maps.Animation.DROP,
+    					map: map.instance,
+    					id: document._id
+    				});
+  
+    				markers[document._id] = marker;
+    			},
+    			removed: function(oldDocument){
+    				//Remove the marker from the map
+    				markers[oldDocument._id].setMap(null);
+    				delete markers[oldDocument._id];
+    			}
+    		});
+
     		});
   		});
+
+	Template.filter.helpers({
+		results: function(){
+			return Postings.find({
+				location: Session.get('locationFilter')
+			}, {sort: {createdAt: -1}});
+		},
+		city: function(){
+			return Session.get('locationFilter');
+		},
+		posting_marker: function(){
+			//Insert marker into collection
+			if(this.geocode_address){
+			Temporary_Markers.insert(this.geocode_address);
+    		}
+    	}
 	});
+
+	Template.filter.events({
+		'submit': function(event, template){
+			event.preventDefault();
+			Temporary_Markers.remove({});
+			Session.set('locationFilter', $('#location').val());
+			searchAddress($('#location').val(), function(geocode_address){
+				GoogleMaps.maps.map.instance.setCenter(geocode_address);
+			})
+		}
+	})
 
 	Template.searchbox.helpers({
   		getPostings: function() {
@@ -304,7 +353,6 @@ Router.route('/profile/:createdBy', function(){
   		// We can use the `ready` callback to interact with the map API once the map is ready.
   		GoogleMaps.ready('map', function(map) {
     		// Add a marker to the map once it's ready
-    		position = searchAddress();
     		var marker = new google.maps.Marker({
     			position: {lat: thiscontext.geocode_address.lat, lng: thiscontext.geocode_address.lng},
     			map: map.instance

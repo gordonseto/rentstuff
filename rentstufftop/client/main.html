@@ -23,7 +23,7 @@
 </template>
 
 <template name="home">
-<p> {{> searchbox}} </p>
+<p> {{> filter}} </p>
 </template>
 
 <template name="map">
@@ -31,6 +31,29 @@
 <div class="map-container">
   {{> googleMap name="map" options=mapOptions}}
 </div>
+</template>
+
+<template name="filter">
+  <form>
+  <p>Searching near <input id="location" type="text" placeholder="City" value="{{city}}"/></p>
+    <div class="map-container">
+      {{> googleMap name="map" options=mapOptions}}
+    </div>
+  </form>
+  <div>
+    {{#each results}}
+    <a href="{{pathFor route='posting'}}">
+    <span class="postPreview">
+    <p><img src="{{postingImages.[0]}}"></p>
+    <p>{{title}}</p>
+    <p>Location: {{location}}</p>
+    <p>{{rentalrate}} /day</p>
+    <p>Posted {{timedifference}}</p>
+    {{posting_marker}}
+    </span>
+    </a>
+    {{/each}}
+  </div>
 </template>
 
 <template name="searchbox">
