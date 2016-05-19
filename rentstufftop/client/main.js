@@ -597,6 +597,7 @@ function locationOf(element, array, start, end){
 			var title = $('[name="title"]').val();
 			var description = $('[name="description"]').val();
 			var location = $('[name="location"]').val();
+			var address = $('[name="address"]').val();
 			var rentalrate = $('[name="rentalrate"]').val();
 			var postingImages = this.postingImages;
 			console.log(postingImages);
@@ -613,9 +614,12 @@ function locationOf(element, array, start, end){
 			}
 			var bookingsArray = this.daysBooked.postingBookings;
 			var createdAt = this.createdAt;
-			Postings.update({_id: postingId},{$set: {title: title,
+			searchAddress(address, function(geocode_address){
+				Postings.update({_id: postingId}, {$set:{title: title,
 							description: description,
 							location: location,
+							address: address,
+							geocode_address: geocode_address,
 							rentalrate: rentalrate,
 							createdAt: createdAt,
 							createdBy: currentUsername,
@@ -623,9 +627,10 @@ function locationOf(element, array, start, end){
 							daysBooked: daysBooked = {
 								postingBookings: bookingsArray
 							}
-			}});
-			Session.set("selected_images", null);	
-			Router.go('/posting/'+postingId);
+				}});
+				Session.set("selected_images", null);	
+				Router.go('/posting/'+postingId)
+			});
 		},
 		'click .delete-image': function(){
 			event.preventDefault();
