@@ -42,6 +42,7 @@
   </form>
   <div>
     {{#each results}}
+    <div class="posting_container">
     <a href="{{pathFor route='posting'}}">
     <span class="postPreview">
     <p><img src="{{postingImages.[0]}}"></p>
@@ -52,6 +53,7 @@
     {{posting_marker}}
     </span>
     </a>
+    </div>
     {{/each}}
   </div>
 </template>
@@ -104,6 +106,7 @@
 
 <template name="newPosting">
   <form>
+  {{location_search}}
   <p>Title: <input type="text" name="title" required></p>
   <p>Description: <input type="text" name="description"></p>
   <p>Location: <input type="text" name="location" required></p>

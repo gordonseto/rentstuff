@@ -116,12 +116,6 @@ Router.route('/profile/:createdBy', function(){
 		name: 'profile'
 });
 
-	Template.ApplicationLayout.events({
-		'click a': function(){
-			PostingsSearch.search(null);
-		}
-	})
-
 	Template.navigation.helpers({
 		'loggedinUser': function(){
 			return Meteor.user().username;
@@ -166,32 +160,53 @@ Router.route('/profile/:createdBy', function(){
 		}
 	});
 
+const DEFAULT_MARKER = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FE7569' 
+const GREEN_MARKER = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|009999';
+
 	Template.filter.onCreated(function() {
   		// We can use the `ready` callback to interact with the map API once the map is ready.
   		GoogleMaps.ready('map', function(map) {
-  			var markers = {};
     		// Add markers to the map once it's ready from
     		//temporary_markers collection
+    		var markers = {};
     		Temporary_Markers.find().observe({
     			added: function(document){
     				var marker = new google.maps.Marker({
     					position: new google.maps.LatLng(document.lat, document.lng),
     					animation: google.maps.Animation.DROP,
     					map: map.instance,
+    					icon: document.color,
     					id: document._id
     				});
-  
+  					
+  					//change colour when mouseover
+  					google.maps.event.addListener(marker, 'mouseover', function(){
+  						marker.setIcon(GREEN_MARKER);
+  						console.log(document._id);
+  					});
+  					//change colour back when mouseout
+  					google.maps.event.addListener(marker, 'mouseout', function(){
+  						marker.setIcon(DEFAULT_MARKER);
+  					})
+
     				markers[document._id] = marker;
+    			},
+    			changed: function(document){
+    				markers[document._id].setIcon(document.color);
     			},
     			removed: function(oldDocument){
     				//Remove the marker from the map
     				markers[oldDocument._id].setMap(null);
-    				delete markers[oldDocument._id];
+    				//clear the event listener
+    				google.maps.event.clearInstanceListeners(
+    					markers[oldDocument._id]); 
+    				//remove the reference to this marker instance
+    				delete markers[oldDocument._id];   			
     			}
     		});
 
-    		});
-  		});
+    	});
+  	});
 
 	Template.filter.helpers({
 		results: function(){
@@ -205,7 +220,11 @@ Router.route('/profile/:createdBy', function(){
 		posting_marker: function(){
 			//Insert marker into collection
 			if(this.geocode_address){
-			Temporary_Markers.insert(this.geocode_address);
+			postingId = this._id;
+			Temporary_Markers.insert({lat: this.geocode_address.lat, 
+									lng: this.geocode_address.lng, 
+									postingId: postingId,
+									color: DEFAULT_MARKER});
     		}
     	}
 	});
@@ -218,6 +237,12 @@ Router.route('/profile/:createdBy', function(){
 			searchAddress($('#location').val(), function(geocode_address){
 				GoogleMaps.maps.map.instance.setCenter(geocode_address);
 			})
+		},	//mouseenter, change color to green, mouseleave, change to default
+		'mouseenter .posting_container': function(event, template){
+			Temporary_Markers.update({postingId: this._id}, {$set: {color: GREEN_MARKER}});
+		},
+		'mouseleave .posting_container': function(event, template){
+			Temporary_Markers.update({postingId: this._id}, {$set: {color: DEFAULT_MARKER}});
 		}
 	})
 
@@ -564,6 +589,12 @@ function locationOf(element, array, start, end){
 					{sort: {createdAt: -1}});
 		}
 	});
+
+	Template.newPosting.helpers({
+		'location_search': function(){
+			console.log(Session.get('locationFilter'));
+		}
+	})
 
 	Template.newPosting.events({
 		'submit form': function(){
