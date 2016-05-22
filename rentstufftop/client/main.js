@@ -168,7 +168,16 @@ const GREEN_MARKER = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&c
   		GoogleMaps.ready('map', function(map) {
     		// Add markers to the map once it's ready from
     		//temporary_markers collection
+    		var ZIndex = 1;
     		var markers = {};
+    		var openwindow = null;
+    		//add listener to close infowindows
+    		google.maps.event.addListener(map.instance, 'click', function(){
+    			if(openwindow){
+    				openwindow.close();
+    			}
+    		});
+
     		Temporary_Markers.find().observe({
     			added: function(document){
     				var marker = new google.maps.Marker({
@@ -176,13 +185,27 @@ const GREEN_MARKER = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&c
     					animation: google.maps.Animation.DROP,
     					map: map.instance,
     					icon: document.color,
-    					id: document._id
+    					id: document._id,
+    					zIndex: ++ZIndex
     				});
-  					
+					//infowindow event
+					postingId = document.postingId;
+					var infowindow = new google.maps.InfoWindow({
+						content: infoWindowContent(postingId)
+					});
+
+					google.maps.event.addListener(marker, 'click', function(){
+						if(openwindow){ //if previously opened window, close
+							openwindow.close();
+						}
+						infowindow.open(map.instance, marker);
+						openwindow = infowindow;
+					});			
   					//change colour when mouseover
   					google.maps.event.addListener(marker, 'mouseover', function(){
   						marker.setIcon(GREEN_MARKER);
-  						console.log(document._id);
+  						marker.setZIndex(++ZIndex);
+  						infowindow.setZIndex(ZIndex)
   					});
   					//change colour back when mouseout
   					google.maps.event.addListener(marker, 'mouseout', function(){
@@ -207,6 +230,28 @@ const GREEN_MARKER = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&c
 
     	});
   	});
+
+function infoWindowContent(postingId){
+	posting = Postings.findOne({_id: postingId});
+	if(posting.postingImages[0]){	//check if image
+	contentString = '<a href="/posting/'+posting._id+'">'+
+					'<span class="postPreview">'+
+					'<p><img src="'+posting.postingImages[0]+'"></p>'+
+					'<p>'+posting.title+'</p>'+
+					'<p>'+posting.rentalrate+' /day</p>'+
+					'</span>'+
+					'</a>';
+	}else {
+	contentString = '<a href="/posting/'+posting._id+'">'+
+					'<span class="postPreview">'+
+					'<p><img></p>'+
+					'<p>'+posting.title+'</p>'+
+					'<p>'+posting.rentalrate+' /day</p>'+
+					'</span>'+
+					'</a>';
+	}
+	return contentString;
+}
 
 	Template.filter.helpers({
 		results: function(){
@@ -380,7 +425,8 @@ const GREEN_MARKER = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&c
     		// Add a marker to the map once it's ready
     		var marker = new google.maps.Marker({
     			position: {lat: thiscontext.geocode_address.lat, lng: thiscontext.geocode_address.lng},
-    			map: map.instance
+    			map: map.instance,
+    			icon: DEFAULT_MARKER
     		});
   		});
 	});

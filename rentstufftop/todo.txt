@@ -12,3 +12,5 @@ googe maps api key: AIzaSyCxnXWYmJJy6qeEEOFLf86bqK1vVw3t6ZA
 -make new pages when front page too big
 -add map resize for markers
 -keep city on navigation
+-fix filter searches for uppercase and lowercase, localization
+-impulse multiple items one location
