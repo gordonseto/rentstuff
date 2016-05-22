@@ -94,6 +94,7 @@ Router.route('/newPosting',{
 Router.onStop(function(){
 	//register the previous route location in a session variable
 	Session.set("previousLocationPath", Router.current().url);
+	Temporary_Markers.remove({});
 });
 
 
@@ -145,18 +146,6 @@ Router.route('/profile/:createdBy', function(){
 			currentDate = new Date();
 
 			return getTimeDifference(postedDate, currentDate);
-		}
-	});
-
-	Template.filter.helpers({
-		mapOptions: function(){
-			if (GoogleMaps.loaded()){
-				map = {
-					center: new google.maps.LatLng(51.0486151, -114.0708459),
-					zoom: 11
-				};
-				return map;
-			}
 		}
 	});
 
@@ -234,26 +223,39 @@ const GREEN_MARKER = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&c
 function infoWindowContent(postingId){
 	posting = Postings.findOne({_id: postingId});
 	if(posting.postingImages[0]){	//check if image
-	contentString = '<a href="/posting/'+posting._id+'">'+
+	contentString = '<div class="posting_container">'+
+					'<a href="/posting/'+posting._id+'">'+
 					'<span class="postPreview">'+
 					'<p><img src="'+posting.postingImages[0]+'"></p>'+
 					'<p>'+posting.title+'</p>'+
 					'<p>'+posting.rentalrate+' /day</p>'+
 					'</span>'+
-					'</a>';
+					'</a>'+
+					'</div>';
 	}else {
-	contentString = '<a href="/posting/'+posting._id+'">'+
+	contentString = '<div class="posting_container">'+
+					'<a href="/posting/'+posting._id+'">'+
 					'<span class="postPreview">'+
 					'<p><img></p>'+
 					'<p>'+posting.title+'</p>'+
 					'<p>'+posting.rentalrate+' /day</p>'+
 					'</span>'+
-					'</a>';
+					'</a>'+
+					'</div>';
 	}
 	return contentString;
 }
 
 	Template.filter.helpers({
+		mapOptions: function(){
+			if (GoogleMaps.loaded()){
+				map = {
+					center: new google.maps.LatLng(51.0486151, -114.0708459),
+					zoom: 11
+				};
+				return map;
+			}
+		},
 		results: function(){
 			return Postings.find({
 				location: Session.get('locationFilter')
@@ -275,13 +277,22 @@ function infoWindowContent(postingId){
 	});
 
 	Template.filter.events({
+		'click .maptoggle': function(){
+			$('.map-container').toggle();
+		},
+		'click .posting_container a': function(event){
+			event.preventDefault();
+			window.open(event.currentTarget.href);
+		},
 		'submit': function(event, template){
 			event.preventDefault();
-			Temporary_Markers.remove({});
-			Session.set('locationFilter', $('#location').val());
-			searchAddress($('#location').val(), function(geocode_address){
-				GoogleMaps.maps.map.instance.setCenter(geocode_address);
-			})
+			if($('#location').val() != Session.get('locationFilter')){
+				Temporary_Markers.remove({});				
+				Session.set('locationFilter', $('#location').val());
+				searchAddress($('#location').val(), function(geocode_address){
+					GoogleMaps.maps.map.instance.setCenter(geocode_address);
+				})
+			}
 		},	//mouseenter, change color to green, mouseleave, change to default
 		'mouseenter .posting_container': function(event, template){
 			Temporary_Markers.update({postingId: this._id}, {$set: {color: GREEN_MARKER}});

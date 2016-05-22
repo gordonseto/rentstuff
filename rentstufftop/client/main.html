@@ -36,6 +36,7 @@
 <template name="filter">
   <form>
   <p>Searching near <input id="location" type="text" placeholder="City" value="{{city}}"/></p>
+  <p><input type="button" class="maptoggle" value="Map"></p>
     <div class="map-container">
       {{> googleMap name="map" options=mapOptions}}
     </div>
@@ -43,7 +44,7 @@
   <div>
     {{#each results}}
     <div class="posting_container">
-    <a href="{{pathFor route='posting'}}">
+    <a href="{{pathFor route='posting'}}" target="{{pathFor route='posting'}}">
     <span class="postPreview">
     <p><img src="{{postingImages.[0]}}"></p>
     <p>{{title}}</p>
