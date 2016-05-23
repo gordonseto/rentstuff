@@ -55,6 +55,9 @@
         <td>SPORT</td>
       </tr>
       <tr>
+        <td>PLAY</td>
+      </tr>
+      <tr>
         <td>UTILITY</td>
       </tr>
       </tbody>
@@ -136,7 +139,9 @@
   <p>Location: <input type="text" name="location" required></p>
   <p>Address: <input type="text" name="address" required></p>
   <p>Rental rate: <input type="text" name="rentalrate" required> /day</p>
-  <p>Category: <input type="text" name="category"> </p>
+  <div class="category-select">
+    Category: <input type="radio" name="category-select" value="snow" required> SNOW   <input type="radio" name="category-select" value="water" required> WATER   <input type="radio" name="category-select" value="sport" required> SPORT   <input type="radio" name="category-select" value="play" required> PLAY    <input type="radio" name="category-select" value="utility" required> UTILITY
+  </div>
     <div class="row">
       <div class="col-xs-5">
         <div class="form-group">
@@ -195,7 +200,10 @@
   <p>Location: <input type="text" name="location" value="{{location}}" required></p>
   <p>Address: <input type="text" name="address" value="{{address}}"></p>
   <p>Rental rate: <input type="text" name="rentalrate" value="{{rentalrate}}" required> /day</p>
-  <p>Category: <input type="text" name="category" value="{{category}}" required> /day</p>
+  <div class="category-select">
+    Category: <input type="radio" name="category-select" value="snow" required> SNOW   <input type="radio" name="category-select" value="water" required> WATER   <input type="radio" name="category-select" value="sport" required> SPORT   <input type="radio" name="category-select" value="play" required> PLAY    <input type="radio" name="category-select" value="utility" required> UTILITY
+    {{checkCategory}}
+  </div>
   <p> {{#each postingImages}}
           <p><img src="{{this}}"><a href='#' class="delete-image">[delete]</a></p>
       {{/each}}</p>

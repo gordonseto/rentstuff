@@ -262,7 +262,6 @@ function infoWindowContent(postingId){
 		results: function(){
 			if(Session.get('categoryFilter')){
 				categoriesArray = Session.get('categoryFilter');
-				console.log(categoriesArray);
 				return Postings.find({
 					location: Session.get('locationFilter'),
 					category: {$in: categoriesArray}}, 
@@ -309,8 +308,9 @@ function infoWindowContent(postingId){
 				//set category filter to null
 				Session.set('categoryFilter', null);
 				//unbold text
-				for(i = 0; i < $('td').length; i++){
-					$('td')[i].style.fontWeight = "";
+				listelement = $('td');
+				for(i = 0; i < listelement.length; i++){
+					listelement[i].style.fontWeight = "";
 				}
 			} else{	//if showing, change value of button
 				$('#filterstoggle').val("Filters X");
@@ -749,7 +749,7 @@ function locationOf(element, array, start, end){
 			var location = $('[name="location"]').val();
 			var address = $('[name="address"]').val();
 			var rentalrate = $('[name="rentalrate"]').val();
-			var category = $('[name="category"]').val();
+			var category = Session.get('categorySelect');
 			var postingImages = [];
 			$(".image_holder img").each(function(){
 				postingImages.push(this.src);	//get images from DOM
@@ -773,6 +773,7 @@ function locationOf(element, array, start, end){
 							},
 							daysAvailable: daysAvailable
 				});
+				Session.set('categorySelect', "");
 				Session.set("selected_images", null);	
 				Router.go('posting', {_id: results});
 			});
@@ -803,8 +804,30 @@ function locationOf(element, array, start, end){
 			} else{						//check box was unchecked
 				console.log('yo');
 			}
+		},
+		'click .category-select input': function(event){
+			category = event.currentTarget.value;
+			Session.set('categorySelect', category);
 		}
 	});
+
+	Template.edit.helpers({
+		checkCategory: function(){
+			console.log(this.category);
+			//get current category
+			category = this.category;
+			$('.category-select input').ready(function(){
+			var inputs = $('.category-select input');
+			//check which radio button has  the value of category
+			for(i = 0; i < inputs.length; i++){
+				if(inputs[i].value == category){
+					//check the button if the value is the same
+					inputs[i].checked = true;
+				}
+			}
+		});
+		}
+	})
 
 	Template.edit.events({
 		'submit form': function(){
@@ -820,7 +843,10 @@ function locationOf(element, array, start, end){
 			var location = $('[name="location"]').val();
 			var address = $('[name="address"]').val();
 			var rentalrate = $('[name="rentalrate"]').val();
-			var category = $('[name="category"]').val();
+			var category = this.category;
+			if(Session.get('categorySelect')){
+				category = Session.get('categorySelect');
+			}
 			var postingImages = this.postingImages;
 			console.log(postingImages);
 			if(Session.get("selected_images")){			//if adding more images, 
@@ -871,6 +897,10 @@ function locationOf(element, array, start, end){
 			console.log(postingImages);
 			//edit saved postingImages object in database
 			//Postings.update({_id: parentthis._id}, {$set: {'postingImages': postingImages}});
+		},
+		'click .category-select input': function(event){
+			category = event.currentTarget.value;
+			Session.set('categorySelect', category);
 		}
 	});
 

@@ -14,3 +14,4 @@ googe maps api key: AIzaSyCxnXWYmJJy6qeEEOFLf86bqK1vVw3t6ZA
 -keep city on navigation
 -fix filter searches for uppercase and lowercase, localization
 -impulse multiple items one location
+-edit radioboxes only select on refresh
