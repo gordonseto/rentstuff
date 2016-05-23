@@ -94,6 +94,7 @@ Router.route('/newPosting',{
 Router.onStop(function(){
 	//register the previous route location in a session variable
 	Session.set("previousLocationPath", Router.current().url);
+	Session.set("categoryFilter", null);
 	Temporary_Markers.remove({});
 });
 
@@ -153,6 +154,8 @@ const DEFAULT_MARKER = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter
 const GREEN_MARKER = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|009999';
 
 	Template.filter.onCreated(function() {
+		//Set filters table to null
+		Session.set('categoryFilter', null);
   		// We can use the `ready` callback to interact with the map API once the map is ready.
   		GoogleMaps.ready('map', function(map) {
     		// Add markers to the map once it's ready from
@@ -257,9 +260,18 @@ function infoWindowContent(postingId){
 			}
 		},
 		results: function(){
-			return Postings.find({
-				location: Session.get('locationFilter')
-			}, {sort: {createdAt: -1}});
+			if(Session.get('categoryFilter')){
+				categoriesArray = Session.get('categoryFilter');
+				console.log(categoriesArray);
+				return Postings.find({
+					location: Session.get('locationFilter'),
+					category: {$in: categoriesArray}}, 
+					{sort: {createdAt: -1}});
+			} else {
+				return Postings.find({
+					location: Session.get('locationFilter')
+				}, {sort: {createdAt: -1}});
+			}
 		},
 		city: function(){
 			return Session.get('locationFilter');
@@ -273,12 +285,37 @@ function infoWindowContent(postingId){
 									postingId: postingId,
 									color: DEFAULT_MARKER});
     		}
-    	}
+    	},
+		'timedifference': function(){
+
+			postedDate = this.createdAt;
+			currentDate = new Date();
+
+			return getTimeDifference(postedDate, currentDate);
+		}
 	});
 
 	Template.filter.events({
 		'click .maptoggle': function(){
 			$('.map-container').toggle();
+		},
+		'click .filterstoggle': function(){
+			//if hiding, set filters to null
+			if($('.filters-container').is(":visible")){
+				//remove markers
+				Temporary_Markers.remove({});
+				//change button value
+				$('#filterstoggle').val("Filters");
+				//set category filter to null
+				Session.set('categoryFilter', null);
+				//unbold text
+				for(i = 0; i < $('td').length; i++){
+					$('td')[i].style.fontWeight = "";
+				}
+			} else{	//if showing, change value of button
+				$('#filterstoggle').val("Filters X");
+			}
+			$('.filters-container').toggle();
 		},
 		'click .posting_container a': function(event){
 			event.preventDefault();
@@ -299,6 +336,38 @@ function infoWindowContent(postingId){
 		},
 		'mouseleave .posting_container': function(event, template){
 			Temporary_Markers.update({postingId: this._id}, {$set: {color: DEFAULT_MARKER}});
+		}, //filters table events
+		'click #filters_table td': function(event){
+			//remove existing markers first
+			Temporary_Markers.remove({});
+			//get category that was clicked
+			clickedCategory = event.currentTarget.innerHTML.toLowerCase();
+			//get current category array
+			categoriesArray = Session.get('categoryFilter');
+			if(categoriesArray){
+				//check if selected td is already in the array
+				foundindex = categoriesArray.indexOf(clickedCategory);
+				if(foundindex == -1){
+				//if -1, clickedCategory is not in array, bold text and push to array
+				event.currentTarget.style.fontWeight = "bold";
+				categoriesArray.push(clickedCategory);
+				Session.set('categoryFilter', categoriesArray);
+				} else{	//clickedCategory is in the array, remove from array and unbold
+					//remove from array
+					categoriesArray.splice(foundindex, 1);
+					//unbold
+					event.currentTarget.style.fontWeight = "";
+					if(categoriesArray.length == 0){	
+						//set as null if empty
+						categoriesArray = null;
+					}
+					Session.set('categoryFilter', categoriesArray);
+				}
+			} else{ //categoriesArray does not exist
+				categoriesArray = [clickedCategory];
+				event.currentTarget.style.fontWeight = "bold";
+				Session.set('categoryFilter', categoriesArray);
+			} 
 		}
 	})
 
@@ -597,6 +666,13 @@ function locationOf(element, array, start, end){
 				//getDate takes an array of dates
 				return getDate([booked]);
 			}
+		},
+		'timedifference': function(){
+
+			postedDate = this.createdAt;
+			currentDate = new Date();
+
+			return getTimeDifference(postedDate, currentDate);
 		}
 	});
 
@@ -619,6 +695,13 @@ function locationOf(element, array, start, end){
 		'bookings_preview_days': function(){
 			days = this.days;
 			return getDate(days);
+		},
+		'timedifference': function(){
+
+			postedDate = this.createdAt;
+			currentDate = new Date();
+
+			return getTimeDifference(postedDate, currentDate);
 		}
 	});
 
@@ -666,6 +749,7 @@ function locationOf(element, array, start, end){
 			var location = $('[name="location"]').val();
 			var address = $('[name="address"]').val();
 			var rentalrate = $('[name="rentalrate"]').val();
+			var category = $('[name="category"]').val();
 			var postingImages = [];
 			$(".image_holder img").each(function(){
 				postingImages.push(this.src);	//get images from DOM
@@ -680,6 +764,7 @@ function locationOf(element, array, start, end){
 							address: address,
 							geocode_address: geocode_address,
 							rentalrate: rentalrate,
+							category: category,
 							createdAt: new Date(),
 							createdBy: currentUsername,
 							postingImages: postingImages,
@@ -735,6 +820,7 @@ function locationOf(element, array, start, end){
 			var location = $('[name="location"]').val();
 			var address = $('[name="address"]').val();
 			var rentalrate = $('[name="rentalrate"]').val();
+			var category = $('[name="category"]').val();
 			var postingImages = this.postingImages;
 			console.log(postingImages);
 			if(Session.get("selected_images")){			//if adding more images, 
@@ -757,6 +843,7 @@ function locationOf(element, array, start, end){
 							address: address,
 							geocode_address: geocode_address,
 							rentalrate: rentalrate,
+							category: category,
 							createdAt: createdAt,
 							createdBy: currentUsername,
 							postingImages: postingImages,

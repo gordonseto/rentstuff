@@ -36,7 +36,30 @@
 <template name="filter">
   <form>
   <p>Searching near <input id="location" type="text" placeholder="City" value="{{city}}"/></p>
-  <p><input type="button" class="maptoggle" value="Map"></p>
+  <p><input type="button" id="filterstoggle" class="filterstoggle" value="Filters"><input type="button" class="maptoggle" value="Map"></p>
+    <div class="filters-container">
+      <table id="filters_table">
+      <thead>
+      <tr>
+        <th scope="col">CATEGORIES</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td>SNOW</td>
+      </tr>
+      <tr>
+        <td>WATER</td>
+      </tr>
+      <tr>
+        <td>SPORT</td>
+      </tr>
+      <tr>
+        <td>UTILITY</td>
+      </tr>
+      </tbody>
+      </table>
+    </div>
     <div class="map-container">
       {{> googleMap name="map" options=mapOptions}}
     </div>
@@ -113,6 +136,7 @@
   <p>Location: <input type="text" name="location" required></p>
   <p>Address: <input type="text" name="address" required></p>
   <p>Rental rate: <input type="text" name="rentalrate" required> /day</p>
+  <p>Category: <input type="text" name="category"> </p>
     <div class="row">
       <div class="col-xs-5">
         <div class="form-group">
@@ -171,6 +195,7 @@
   <p>Location: <input type="text" name="location" value="{{location}}" required></p>
   <p>Address: <input type="text" name="address" value="{{address}}"></p>
   <p>Rental rate: <input type="text" name="rentalrate" value="{{rentalrate}}" required> /day</p>
+  <p>Category: <input type="text" name="category" value="{{category}}" required> /day</p>
   <p> {{#each postingImages}}
           <p><img src="{{this}}"><a href='#' class="delete-image">[delete]</a></p>
       {{/each}}</p>

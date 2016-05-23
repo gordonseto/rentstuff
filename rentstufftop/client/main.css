@@ -54,3 +54,11 @@ a:hover{
 	height: 300px;
 	width: 300px;
 }
+
+td:hover{
+	cursor: pointer;
+}
+
+.filters-container{
+	display:none;
+}
