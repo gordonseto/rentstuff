@@ -23,6 +23,12 @@
 </template>
 
 <template name="home">
+<form>
+  <p>Search near <input id="location" type="text" placeholder="city"/></p>
+</form>
+</template>
+
+<template name="search">
 <p> {{> filter}} </p>
 </template>
 
@@ -35,7 +41,7 @@
 
 <template name="filter">
   <form>
-  <p>Searching near <input id="location" type="text" placeholder="City" value="{{city}}"/></p>
+  <p>Searching near <input id="location" type="text" placeholder="city" value="{{city}}"/></p>
   <p><input type="button" id="filterstoggle" class="filterstoggle" value="Filters"><input type="button" class="maptoggle" value="Map"></p>
     <div class="filters-container">
       <table id="filters_table">

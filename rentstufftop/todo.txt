@@ -15,3 +15,6 @@ googe maps api key: AIzaSyCxnXWYmJJy6qeEEOFLf86bqK1vVw3t6ZA
 -fix filter searches for uppercase and lowercase, localization
 -impulse multiple items one location
 -edit radioboxes only select on refresh
+-map hidden on default
+-different sorting
+-price range sorting

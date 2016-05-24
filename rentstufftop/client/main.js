@@ -46,6 +46,18 @@ Router.route('/',{
 	template: 'home'
 });
 
+Router.route('/s/:city', {
+	name: 'search',
+	template: 'search',
+	data: function(){
+		var location = this.params.city;
+		Session.set('locationFilter', location);
+		searchAddress(location, function(geocode_address){
+			GoogleMaps.maps.map.instance.setCenter(geocode_address);
+			});
+	}
+});
+
 Router.route('/register',{
 	name: 'register'
 });
@@ -136,6 +148,14 @@ Router.route('/profile/:createdBy', function(){
 			//location.reload(); //refresh the page
 		}
 	});
+
+	Template.home.events({
+		'submit': function(){
+			event.preventDefault();
+			var location = $('#location').val();
+			Router.go('/s/'+location);
+		}
+	})
 
 	Template.displayPostings.helpers({
 		'posting': function(){
@@ -254,19 +274,23 @@ function infoWindowContent(postingId){
 			if (GoogleMaps.loaded()){
 				map = {
 					center: new google.maps.LatLng(51.0486151, -114.0708459),
-					zoom: 11
+					zoom: 11,
 				};
 				return map;
 			}
 		},
 		results: function(){
 			if(Session.get('categoryFilter')){
+				//remove markers
+				Temporary_Markers.remove({});
 				categoriesArray = Session.get('categoryFilter');
 				return Postings.find({
 					location: Session.get('locationFilter'),
 					category: {$in: categoriesArray}}, 
 					{sort: {createdAt: -1}});
 			} else {
+				//remove markers
+				Temporary_Markers.remove({});
 				return Postings.find({
 					location: Session.get('locationFilter')
 				}, {sort: {createdAt: -1}});
@@ -300,9 +324,9 @@ function infoWindowContent(postingId){
 		},
 		'click .filterstoggle': function(){
 			//if hiding, set filters to null
-			if($('.filters-container').is(":visible")){
-				//remove markers
-				Temporary_Markers.remove({});
+			filters_container = $('.filters-container');
+			if(filters_container.is(":visible")){
+				filters_container.slideUp(300);
 				//change button value
 				$('#filterstoggle').val("Filters");
 				//set category filter to null
@@ -313,9 +337,9 @@ function infoWindowContent(postingId){
 					listelement[i].style.fontWeight = "";
 				}
 			} else{	//if showing, change value of button
+				filters_container.slideDown(300);
 				$('#filterstoggle').val("Filters X");
 			}
-			$('.filters-container').toggle();
 		},
 		'click .posting_container a': function(event){
 			event.preventDefault();
@@ -323,13 +347,8 @@ function infoWindowContent(postingId){
 		},
 		'submit': function(event, template){
 			event.preventDefault();
-			if($('#location').val() != Session.get('locationFilter')){
-				Temporary_Markers.remove({});				
-				Session.set('locationFilter', $('#location').val());
-				searchAddress($('#location').val(), function(geocode_address){
-					GoogleMaps.maps.map.instance.setCenter(geocode_address);
-				})
-			}
+			var location = $('#location').val();
+			Router.go('/s/'+location);
 		},	//mouseenter, change color to green, mouseleave, change to default
 		'mouseenter .posting_container': function(event, template){
 			Temporary_Markers.update({postingId: this._id}, {$set: {color: GREEN_MARKER}});
@@ -338,8 +357,6 @@ function infoWindowContent(postingId){
 			Temporary_Markers.update({postingId: this._id}, {$set: {color: DEFAULT_MARKER}});
 		}, //filters table events
 		'click #filters_table td': function(event){
-			//remove existing markers first
-			Temporary_Markers.remove({});
 			//get category that was clicked
 			clickedCategory = event.currentTarget.innerHTML.toLowerCase();
 			//get current category array
