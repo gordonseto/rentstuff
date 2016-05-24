@@ -52,9 +52,6 @@ Router.route('/s/:city', {
 	data: function(){
 		var location = this.params.city;
 		Session.set('locationFilter', location);
-		searchAddress(location, function(geocode_address){
-			GoogleMaps.maps.map.instance.setCenter(geocode_address);
-			});
 	}
 });
 
@@ -218,6 +215,11 @@ const GREEN_MARKER = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&c
   						marker.setIcon(GREEN_MARKER);
   						marker.setZIndex(++ZIndex);
   						infowindow.setZIndex(ZIndex)
+  						if(openwindow){
+  							openwindow.close();
+  						}
+  						infowindow.open(map.instance, marker);
+  						openwindow = infowindow;
   					});
   					//change colour back when mouseout
   					google.maps.event.addListener(marker, 'mouseout', function(){
@@ -228,6 +230,7 @@ const GREEN_MARKER = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&c
     			},
     			changed: function(document){
     				markers[document._id].setIcon(document.color);
+    				markers[document._id].setZIndex(++ZIndex);
     			},
     			removed: function(oldDocument){
     				//Remove the marker from the map
@@ -272,6 +275,10 @@ function infoWindowContent(postingId){
 	Template.filter.helpers({
 		mapOptions: function(){
 			if (GoogleMaps.loaded()){
+			var location = Session.get('locationFilter');
+			searchAddress(location, function(geocode_address){
+				GoogleMaps.maps.map.instance.setCenter(geocode_address);
+				});
 				map = {
 					center: new google.maps.LatLng(51.0486151, -114.0708459),
 					zoom: 11,
@@ -320,6 +327,12 @@ function infoWindowContent(postingId){
 
 	Template.filter.events({
 		'click .maptoggle': function(){
+			map_container = $('.map-container');
+			if(map_container.is(":visible")){
+				$('#maptoggle').val("Map");
+			} else{
+				$('#maptoggle').val("Hide Map");
+			}
 			$('.map-container').toggle();
 		},
 		'click .filterstoggle': function(){
@@ -749,9 +762,11 @@ function locationOf(element, array, start, end){
 
 	Template.newPosting.helpers({
 		'location_search': function(){
-			console.log(Session.get('locationFilter'));
+			return(Session.get('locationFilter'));
 		}
-	})
+	});
+
+var weekDaysDisabled = [];
 
 	Template.newPosting.events({
 		'submit form': function(){
@@ -771,8 +786,6 @@ function locationOf(element, array, start, end){
 			$(".image_holder img").each(function(){
 				postingImages.push(this.src);	//get images from DOM
 			})
-			daysAvailable = $('#datepicker').datepicker('getFormattedDate');
-			console.log(daysAvailable)
 			var bookingsArray = [];
 			searchAddress(address, function(geocode_address){
 				var results = Postings.insert({title: title,
@@ -788,7 +801,7 @@ function locationOf(element, array, start, end){
 							daysBooked: daysBooked = {
 								postingBookings: []
 							},
-							daysAvailable: daysAvailable
+							weekDaysDisabled: weekDaysDisabled
 				});
 				Session.set('categorySelect', "");
 				Session.set("selected_images", null);	
@@ -813,14 +826,19 @@ function locationOf(element, array, start, end){
 			//edit saved postingImages object in database
 			//Postings.update({_id: parentthis._id}, {$set: {'postingImages': postingImages}});
 		},
-		'click #all-dates': function(){
-			var checkbox = $(this);
-			console.log(checkbox);
-			if (checkbox.is(':checked')) {	//checkbox was checked
-				console.log('hi');
-			} else{						//check box was unchecked
-				console.log('yo');
+		'click .disabled-dates input': function(event){
+			clicked_box = event.currentTarget.value;
+			console.log(clicked_box);
+			clicked_index = weekDaysDisabled.indexOf(clicked_box);
+			if(clicked_index == -1){
+			//-1 means index not found, push onto array
+			weekDaysDisabled.push(clicked_box);
+			} else{
+				weekDaysDisabled.splice(clicked_index, 1);
 			}
+			console.log(weekDaysDisabled);
+			$('#new-posting-datepicker').datepicker(
+				'setDaysOfWeekDisabled', weekDaysDisabled);
 		},
 		'click .category-select input': function(event){
 			category = event.currentTarget.value;
@@ -1237,12 +1255,11 @@ Template.newPosting.onRendered(function(){
 	currentDate = new Date();
 	oneYear = new Date();
 	oneYear.setYear(currentDate.getFullYear()+1);
-	$('#datepicker').datepicker({
-		container: '#datepicker',
+	$('#new-posting-datepicker').datepicker({
+		container: '#new-posting-datepicker',
 		clearBtn: true,
 		startDate: currentDate,
 		endDate: oneYear,
-		title: "Available Dates:",
 		multidate: true
 	});	
 })
@@ -1276,7 +1293,8 @@ Template.calendar.rendered = function(){
 			endDate: oneYear,
 			clearBtn: true,
 			multidate: true,
-			datesDisabled: blockedDays	//block days booked
+			datesDisabled: blockedDays,	//block days booked
+			daysOfWeekDisabled: posting.weekDaysDisabled
 		});
 	}
 }
@@ -1300,17 +1318,19 @@ Template.calendar.helpers({
 		console.log(this._id);
 		postingId = this._id;
 		if(postingId){
-		posting = Postings.findOne({_id: postingId});
-		console.log(posting.daysBooked);
-		console.log(posting.daysBooked.postingBookings);
-		//Check blocked days by using ._map to put 
-		//booked key values in array blockedDays
-		var blockedDays = posting.daysBooked.postingBookings.map(function(obj){
-			return obj.booked;
-		});	
-		console.log(blockedDays);
-		//disable the days in the calendar
-		$('#datepicker').datepicker('setDatesDisabled', blockedDays);
+			posting = Postings.findOne({_id: postingId});
+			console.log(posting.daysBooked);
+			console.log(posting.daysBooked.postingBookings);
+			//Check blocked days by using ._map to put 
+			//booked key values in array blockedDays
+			var blockedDays = posting.daysBooked.postingBookings.map(function(obj){
+				return obj.booked;
+			});	
+			console.log(blockedDays);
+			//disable the days in the calendar
+			$('#datepicker').datepicker('setDatesDisabled', blockedDays);
+			//block days of week
+			$('#datepicker').datepicker('setDaysOfWeekDisabled', this.weekDaysDisabled);
 		}
 	}
 });
