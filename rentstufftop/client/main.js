@@ -39,6 +39,7 @@ Meteor.startup(function() {
 Pages = new Meteor.Pagination(Postings, {
 	templateName: 'pagination',
 	itemTemplate: 'pagination_item',
+	onReloadPage1: true,
 	availableSettings:{
 		perPage: true,
 		sort: true,
@@ -69,12 +70,15 @@ Router.route('/s/:city', {
 	name: 'search',
 	template: 'search',
 	data: function(){
+		//get location from url
 		var location = this.params.city;
+		//set pagination filter to that location
 		Pages.set({
 			filters: {
 				location: location
 			}
 		})
+		//set locationFilter for uses later
 		Session.set('locationFilter', location);
 	}
 });
@@ -100,24 +104,23 @@ Router.route('/posting/:postingId/confirm',function(){
 Router.route('/posting/:_id/edit',{
 	name: 'edit',
 	template: 'edit',
-	data: function(){		//retrieves current posting id,
-		var currentPosting = this.params._id; //returns posting info
+	data: function(){
+		//retrieve current posting id,
+		var currentPosting = this.params._id;
+		//return posting info
 		return Postings.findOne({_id: currentPosting});
 		}
 	});
 
 Router.route('/success', {
 	name: 'success'
-})
-/*
-Router.route('/account',{
-	name: 'account'
-})
-*/
+});
+
 Router.route('/newPosting',{
 	name: 'newPosting',
 	onAfterAction: function(){
-		if(!Meteor.userId()){	//if not a user, redirect to login
+		if(!Meteor.userId()){	
+		//if not a user, redirect to login
 			Router.go('/login/');
 		}
 	}
@@ -127,7 +130,9 @@ Router.route('/newPosting',{
 Router.onStop(function(){
 	//register the previous route location in a session variable
 	Session.set("previousLocationPath", Router.current().url);
+	//set the category filter to null
 	Session.set("categoryFilter", null);
+	//remove all markers
 	Temporary_Markers.remove({});
 });
 
@@ -153,28 +158,26 @@ Router.route('/profile/:createdBy', function(){
 
 	Template.navigation.helpers({
 		'loggedinUser': function(){
+			//shows users username on navigation bar
 			return Meteor.user().username;
 		}
 	});
 
 	Template.navigation.events({
 		'click .logout': function(event){
-			var currentRoute = Router.current().route.getName();
-			//Router.go(currentRoute);
-			console.log(this._id);
-			console.log(currentRoute);
 			Meteor.logout();
+			//refresh the page
 			document.location.reload(true);
-			//Meteor.logout();
-			//location.reload(); //refresh the page
 		}
 	});
 
 	Template.home.events({
 		'submit': function(){
 			event.preventDefault();
+			//get location value from searchbar
 			var location = $('#location').val();
 			location = location.toLowerCase();
+			//go to search url with location
 			Router.go('/s/'+location);
 		}
 	})
@@ -194,6 +197,7 @@ Router.route('/profile/:createdBy', function(){
 
 	Template.pagination.events({
 		'click .pagination_nav a': function(){
+			//remove markers each page switch
 			Temporary_Markers.remove({});
 		}
 	});
@@ -204,14 +208,18 @@ Router.route('/profile/:createdBy', function(){
 			if(this.geocode_address){
 			postingId = this._id;
 			categoriesArray = Session.get('categoryFilter');
+			//check if categoriesArray is null or []
 				if(categoriesArray != null && categoriesArray.length != 0){
+					//if it is, check if the posting's category lies in the array
 					if(categoriesArray.indexOf(this.category) != -1){
+					//if != -1, it is in the array
 					Temporary_Markers.insert({lat: this.geocode_address.lat, 
 									lng: this.geocode_address.lng, 
 									postingId: postingId,
 									color: DEFAULT_MARKER});
     				}
     			} else{
+    				//if categoriesArray is null or [], insert all postings
 					Temporary_Markers.insert({lat: this.geocode_address.lat, 
 									lng: this.geocode_address.lng, 
 									postingId: postingId,
@@ -249,7 +257,9 @@ const GREEN_MARKER = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&c
     		});
 
     		Temporary_Markers.find().observe({
+    		//observe the Temporary_Markers collection
     			added: function(document){
+    				//if added, add a new marker
     				var marker = new google.maps.Marker({
     					position: new google.maps.LatLng(document.lat, document.lng),
     					map: map.instance,
@@ -257,12 +267,12 @@ const GREEN_MARKER = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&c
     					id: document._id,
     					zIndex: ++ZIndex
     				});
-					//infowindow event
+					//add an infowindow to the marker
 					postingId = document.postingId;
 					var infowindow = new google.maps.InfoWindow({
 						content: infoWindowContent(postingId)
 					});
-
+					//add listeners for hovering and click
 					google.maps.event.addListener(marker, 'click', function(){
 						if(openwindow){ //if previously opened window, close
 							openwindow.close();
@@ -273,6 +283,7 @@ const GREEN_MARKER = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&c
   					//change colour when mouseover
   					google.maps.event.addListener(marker, 'mouseover', function(){
   						marker.setIcon(GREEN_MARKER);
+  						//set ZIndex to the highest ZIndex
   						marker.setZIndex(++ZIndex);
   						infowindow.setZIndex(ZIndex)
   						if(openwindow){
@@ -289,6 +300,7 @@ const GREEN_MARKER = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&c
     				markers[document._id] = marker;
     			},
     			changed: function(document){
+    				//changes when posting is hovered over
     				markers[document._id].setIcon(document.color);
     				markers[document._id].setZIndex(++ZIndex);
     			},
@@ -335,7 +347,10 @@ function infoWindowContent(postingId){
 	Template.filter.helpers({
 		mapOptions: function(){
 			if (GoogleMaps.loaded()){
+			//get location from locationFilter
 			var location = Session.get('locationFilter');
+			//search the address, callback sets center of map
+			//to location returned from function
 			searchAddress(location, function(geocode_address){
 				GoogleMaps.maps.map.instance.setCenter(geocode_address);
 				});
@@ -346,35 +361,8 @@ function infoWindowContent(postingId){
 				return map;
 			}
 		},
-		results: function(){
-			if(Session.get('categoryFilter')){
-				//remove markers
-				Temporary_Markers.remove({});
-				categoriesArray = Session.get('categoryFilter');
-				return Postings.find({
-					location: Session.get('locationFilter'),
-					category: {$in: categoriesArray}}, 
-					{sort: {createdAt: -1}});
-			} else {
-				//remove markers
-				Temporary_Markers.remove({});
-				return Postings.find({
-					location: Session.get('locationFilter')
-				}, {sort: {createdAt: -1}});
-			}
-		},
 		city: function(){
 			return Session.get('locationFilter');
-		},
-		posting_marker: function(){
-			//Insert marker into collection
-			if(this.geocode_address){
-			postingId = this._id;
-			Temporary_Markers.insert({lat: this.geocode_address.lat, 
-									lng: this.geocode_address.lng, 
-									postingId: postingId,
-									color: DEFAULT_MARKER});
-    		}
     	},
 		'timedifference': function(){
 
@@ -387,22 +375,33 @@ function infoWindowContent(postingId){
 
 	Template.filter.events({
 		'click .maptoggle': function(){
+			//get element from the DOM
 			map_container = $('.map-container');
+
 			if(map_container.is(":visible")){
+			//if the map was visible before click, set button to "Map"
 				$('#maptoggle').val("Map");
 			} else{
+			//if the map was hidden, set button to "Hide Map"
 				$('#maptoggle').val("Hide Map");
 			}
+			//toggle map
 			$('.map-container').toggle();
 		},
 		'click .filterstoggle': function(){
-			//if hiding, set filters to null
+			//get element from the DOM
 			filters_container = $('.filters-container');
+			
 			if(filters_container.is(":visible")){
+				//if filter was visible before click, slide up
 				filters_container.slideUp(300);
-				Temporary_Markers.remove({});
-				//set category filter to null
-				Session.set('categoryFilter', null);
+				if(Session.get('categoryFilter')){
+					//remove markers from map
+					Temporary_Markers.remove({});
+					//set category filter to null
+					Session.set('categoryFilter', null);
+				}
+				//set pages to only filter location
 				Pages.set({
 					filters: {
 						location: Session.get('locationFilter')
@@ -415,29 +414,37 @@ function infoWindowContent(postingId){
 				for(i = 0; i < listelement.length; i++){
 					listelement[i].style.fontWeight = "";
 				}
-			} else{	//if showing, change value of button
+			} else{	
+				//if showing, change value of button
 				filters_container.slideDown(300);
 				$('#filterstoggle').val("Filters X");
 			}
 		},
 		'click .posting_container a': function(event){
 			event.preventDefault();
+			//opens new tab when clicking posting_previews
 			window.open(event.currentTarget.href);
 		},
 		'submit': function(event, template){
 			event.preventDefault();
+			//searches new location when entered by user
 			var location = $('#location').val();
 			location = location.toLowerCase();
 			Router.go('/s/'+location);
-		},	//mouseenter, change color to green, mouseleave, change to default
+		},	
+		//mouseenter, change color to green
 		'mouseenter .posting_container': function(event, template){
 			Temporary_Markers.update({postingId: this._id}, {$set: {color: GREEN_MARKER}});
 		},
+		//mouseleave, change color back to default
 		'mouseleave .posting_container': function(event, template){
 			Temporary_Markers.update({postingId: this._id}, {$set: {color: DEFAULT_MARKER}});
-		}, //filters table events
+		}, 
+		//filters table events
 		'click #filters_table td': function(event){
+			//remove markers from map
 			Temporary_Markers.remove({});
+			//get location
 			var location = Session.get('locationFilter');
 			//get category that was clicked
 			clickedCategory = event.currentTarget.innerHTML.toLowerCase();
@@ -450,6 +457,7 @@ function infoWindowContent(postingId){
 				//if -1, clickedCategory is not in array, bold text and push to array
 				event.currentTarget.style.fontWeight = "bold";
 				categoriesArray.push(clickedCategory);
+				//set pages filter category
 				Pages.set({
 					filters: {
 						location: location,
@@ -471,6 +479,7 @@ function infoWindowContent(postingId){
 							}
 						});
 					} else {
+						//set pages filter to new category array
 						Pages.set({
 							filters: {
 								location: location,
@@ -508,6 +517,8 @@ function infoWindowContent(postingId){
 	Template.searchbox.events({
     	'keyup #search-box': function(event) {
     		setTimeout(function(){
+    			//set timeout so not all keystrokes fire 
+    			//an event
         		var text = $(event.target).val().trim();
         		PostingsSearch.search(text);
  			}, 100);
@@ -559,27 +570,28 @@ function infoWindowContent(postingId){
 
 	Template.posting.events({
 		'click .save-posting': function(){
-			if(!Meteor.userId()){	//if not logged in, redirect to login
+			if(!Meteor.userId()){	
+			//if not logged in, redirect to login
 				Router.go('login');
 			}
 			else {
-			postingId = this._id;
-			//get meteor username
-			meteorusername = Meteor.user().username;
-			//meteor username is same as Rentstuff_Users username
-			currentUser = Rentstuff_Users.findOne({username: meteorusername});
-			//get current saved postings array from user profile
-			current_saved_postings = currentUser.saved_postings;
-			//check if posting has already been saved
-			var check = current_saved_postings.indexOf(postingId);
-			if(check != -1){
-				return;
-			} else{			
-			//else push this posting id onto array
-			current_saved_postings.push(this._id);
-			//save new array into rentstuff_users profile
-			Rentstuff_Users.update({_id: currentUser._id}, 
-				{$set:{'saved_postings': current_saved_postings}});
+				postingId = this._id;
+				//get meteor username
+				meteorusername = Meteor.user().username;
+				//meteor username is same as Rentstuff_Users username
+				currentUser = Rentstuff_Users.findOne({username: meteorusername});
+				//get current saved postings array from user profile
+				current_saved_postings = currentUser.saved_postings;
+				//check if posting has already been saved
+				var check = current_saved_postings.indexOf(postingId);
+				if(check != -1){
+					return;
+				} else{			
+				//else push this posting id onto array
+				current_saved_postings.push(this._id);
+				//save new array into rentstuff_users profile
+				Rentstuff_Users.update({_id: currentUser._id}, 
+					{$set:{'saved_postings': current_saved_postings}});
 				}
 			}
 		},
@@ -649,6 +661,12 @@ function infoWindowContent(postingId){
 
 	Template.confirm.events({
 		'submit form': function(){
+			/*when the user clicks confirm, 3 dbs are updated:
+			the posting's entry in Postings is updated to being
+			booked on days selected, the loaning user's Rentstuff_Users
+			"loans" array is updated, and the borrowing user's
+			Rentstuff_users "bookings" array is updated
+			*/
 			event.preventDefault();
 			//get current user
 			currentUsername = Meteor.user().username;
@@ -766,11 +784,19 @@ function locationOf(element, array, start, end){
 	});
 
 	Template.profile_loans.helpers({
+		'check_loan_date': function(){
+			//check if loan date has already passed
+			currentDate = new Date();
+			//if it has, return false and loan is not displayed
+			if(currentDate.getTime() > new Date(this.booked).getTime()){
+				return false;
+			}
+			return true;
+		},
 		'loans': function(){
 			meteorusername = Meteor.user().username;
 			//meteor username is same as Rentstuff_Users username
 			currentUser = Rentstuff_Users.findOne({username: meteorusername});
-			console.log(currentUser);
 			if(currentUser){
 			//get current saved postings array from user profile
 			loans = currentUser.loans;
@@ -845,14 +871,6 @@ function locationOf(element, array, start, end){
 		}
 	});
 
-	Template.accountPostings.helpers({
-		'posting': function(){
-			var currentUser = Meteor.userId();
-			return Postings.find({createdBy: currentUser}, 
-					{sort: {createdAt: -1}});
-		}
-	});
-
 	Template.newPosting.helpers({
 		'location_search': function(){
 			return(Session.get('locationFilter'));
@@ -864,11 +882,14 @@ var weekDaysDisabled = [];
 	Template.newPosting.events({
 		'submit form': function(){
 			event.preventDefault();
+			//get current user's id
 			var currentUser = Meteor.userId();
 			user = Meteor.users.findOne({_id: currentUser});
 			if (user){
+				//get user's username
 				var currentUsername = user.username;
 			}
+			//get posting information from the DOM
 			var title = $('[name="title"]').val();
 			var description = $('[name="description"]').val();
 			var location = $('[name="location"]').val();
@@ -877,10 +898,13 @@ var weekDaysDisabled = [];
 			var category = Session.get('categorySelect');
 			var postingImages = [];
 			$(".image_holder img").each(function(){
-				postingImages.push(this.src);	//get images from DOM
+				//get images from DOM
+				postingImages.push(this.src);	
 			})
 			var bookingsArray = [];
 			searchAddress(address, function(geocode_address){
+			//search location to get geocoded address, 
+			//callback inserts posting into postings collection
 				var results = Postings.insert({title: title,
 							description: description,
 							location: location,
@@ -897,7 +921,8 @@ var weekDaysDisabled = [];
 							weekDaysDisabled: weekDaysDisabled
 				});
 				Session.set('categorySelect', "");
-				Session.set("selected_images", null);	
+				Session.set("selected_images", null);
+				//go to posting	
 				Router.go('posting', {_id: results});
 			});
 		},
@@ -920,20 +945,23 @@ var weekDaysDisabled = [];
 			//Postings.update({_id: parentthis._id}, {$set: {'postingImages': postingImages}});
 		},
 		'click .disabled-dates input': function(event){
+			//get which box was clicked from event
 			clicked_box = event.currentTarget.value;
-			console.log(clicked_box);
+			//get index of clicked_box in weekDaysDisabled array
 			clicked_index = weekDaysDisabled.indexOf(clicked_box);
 			if(clicked_index == -1){
 			//-1 means index not found, push onto array
 			weekDaysDisabled.push(clicked_box);
 			} else{
+			//if index is found, remove clicked_box from the array
 				weekDaysDisabled.splice(clicked_index, 1);
 			}
-			console.log(weekDaysDisabled);
+			//disable weekDaysDisabled days on datepicker
 			$('#new-posting-datepicker').datepicker(
 				'setDaysOfWeekDisabled', weekDaysDisabled);
 		},
 		'click .category-select input': function(event){
+			//get category from the DOM
 			category = event.currentTarget.value;
 			Session.set('categorySelect', category);
 		}
@@ -946,7 +974,7 @@ var weekDaysDisabled = [];
 			category = this.category;
 			$('.category-select input').ready(function(){
 			var inputs = $('.category-select input');
-			//check which radio button has  the value of category
+			//check which radio button has the value of category
 			for(i = 0; i < inputs.length; i++){
 				if(inputs[i].value == category){
 					//check the button if the value is the same
@@ -960,11 +988,14 @@ var weekDaysDisabled = [];
 	Template.edit.events({
 		'submit form': function(){
 			event.preventDefault();
+			//get current user's id
 			var currentUser = Meteor.userId();
 			user = Meteor.users.findOne({_id: currentUser});
 			if (user){
+				//get user's username
 				var currentUsername = user.username;
 			}
+			//keep postingId, get information from the DOM
 			var postingId = this._id;
 			var title = $('[name="title"]').val();
 			var description = $('[name="description"]').val();
@@ -988,9 +1019,11 @@ var weekDaysDisabled = [];
 					console.log(postingImages);
 				}
 			}
+			//keep previous bookings and time created at
 			var bookingsArray = this.daysBooked.postingBookings;
 			var createdAt = this.createdAt;
 			searchAddress(address, function(geocode_address){
+				//update postings in callback from searchAddress
 				Postings.update({_id: postingId}, {$set:{title: title,
 							description: description,
 							location: location,
@@ -1005,7 +1038,8 @@ var weekDaysDisabled = [];
 								postingBookings: bookingsArray
 							}
 				}});
-				Session.set("selected_images", null);	
+				Session.set("selected_images", null);
+				//go to posting	
 				Router.go('/posting/'+postingId)
 			});
 		},
@@ -1158,6 +1192,7 @@ function searchAddress(addressInput, fn){
 	var geocoder = new google.maps.Geocoder();
 	geocoder.geocode({'address': addressInput}, function(results, status){
 		if(status == google.maps.GeocoderStatus.OK){
+			//results is an array, get first result
 			lat = results[0].geometry.location.lat();
 			lng = results[0].geometry.location.lng();
 			console.log(lat);
@@ -1172,7 +1207,8 @@ function searchAddress(addressInput, fn){
 }
 
 function createMarker(latlng){
-	//If the user makes another search you must clear the marker variable
+	//If the user makes another search, 
+	//clear the marker variable
 	if(marker != undefined && marker != ''){
 		market.setMap(null);
 		marker = '';
@@ -1362,6 +1398,7 @@ Template.newPosting.onRendered(function(){
 Template.calendar.rendered = function(){
 	currentDate = new Date();
 	oneYear = new Date();
+	//set year of oneYear to one year greater than current date
 	oneYear.setYear(currentDate.getFullYear()+1);
 	//Get parent datacontext
 	var dataContext = Template.currentData();
@@ -1431,19 +1468,24 @@ Template.calendar.helpers({
 Template.calendar.events({
 	'submit form': function(){
 		event.preventDefault();
+		//get selected dates
 		selected_Dates = $('#datepicker').datepicker('getFormattedDate');
 		console.log(selected_Dates);
+		//split date string into array of dates
 		selected_Dates = selected_Dates.split(','); //split selected_Dates string into
 		console.log(selected_Dates);				//seperate values in an array
 		currentUser = Meteor.userId();
 		if(!currentUser){
+			//if not logged in, redirect to login
 			Router.go('/login');
 		}
 		else if(selected_Dates == ""){
+			//if no selected dates, alert
 			alert('Make sure to pick a booking time');
 			}
 		else{
 			postingId = this._id;
+			//set daysBooked session, go to confirm route
 			Session.set("daysBooked", selected_Dates);
 			Router.go('/posting/'+postingId+'/confirm/');
 		}

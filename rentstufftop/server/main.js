@@ -41,7 +41,7 @@ function buildRegExp(searchText) {
 Pages = new Meteor.Pagination(Postings, {
 	templateName: 'pagination',
 	itemTemplate: 'pagination_item',
-	dataMargin: 0,
+	onReloadPage1: true,
 	availableSettings:{
 		perPage: true,
 		sort: true,

@@ -293,13 +293,14 @@
 
 <template name="profile_loans">
 {{#if loans}}
-<h2>My upcoming loans:</h2>
-{{#each loans}}
-<div class='row'>
-<div class='col-xs-3'>
-<p>{{loans_preview_days}}:</p>
-  <a href="/profile/{{username}}">{{username}}</a> renting
-  {{#with loans_preview}}
+  <h2>My upcoming loans:</h2>
+  {{#each loans}}
+    {{#if check_loan_date}}
+      <div class='row'>
+      <div class='col-xs-3'>
+      <p>{{loans_preview_days}}:</p>
+      <a href="/profile/{{username}}">{{username}}</a> renting
+      {{#with loans_preview}}
       <a href="{{pathFor route='posting'}}">
         <span class="postPreview">
           <p><img src="{{postingImages.[0]}}"></p>
@@ -309,10 +310,11 @@
           <p>Posted {{timedifference}}</p>
         </span>
       </a>
-  {{/with}}
-</div>
-</div>
-{{/each}}
+      {{/with}}
+      </div>
+      </div>
+    {{/if}}
+  {{/each}}
 {{/if}}
 </template>
 
@@ -380,28 +382,6 @@
     <p>Password: <input type="password" name="password" required></p>
     <p><input type="submit" value="Login"></p>
   </form>
-</template>
-
-<template name="account">
-  <h2>My Account</h2>
-  <h3>My Postings:</h3>
-  {{> accountPostings}}
-</template>
-
-<template name="accountPostings">
-  {{#each posting}}
-    <a href="{{pathFor route='posting'}}">
-    <span class="postPreview">
-      <p>{{#with postingImages}}
-          <img src="{{imageId.[0]}}">
-          {{/with}}
-      </p>
-    <p>{{title}}</p>
-    <p>Location: {{location}}</p>
-    <p>{{rentalrate}} /day</p>
-    </span>
-    </a>
-{{/each}}
 </template>
 
 <template name="success">
