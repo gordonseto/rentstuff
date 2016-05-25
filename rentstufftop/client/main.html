@@ -26,14 +26,38 @@
 <form>
   <p>Search near <input id="location" type="text" placeholder="city"/></p>
 </form>
+
 </template>
 
 <template name="search">
 <p> {{> filter}} </p>
 </template>
 
+<template name="pagination">
+<div class="row">{{> pages}}</div>
+<div class="row">
+  <div class="pagination_nav">
+    {{> pagesNav}}
+  </div>
+</div>
+</template>
+
+<template name="pagination_item">
+  <div class="posting_container">
+    <a href="{{pathFor route='posting'}}" target="{{pathFor route='posting'}}">
+      <span class="postPreview">
+        <p><img src="{{postingImages.[0]}}"></p>
+        <p>{{title}}</p>
+        <p>Location: {{location}}</p>
+        <p>{{rentalrate}} /day</p>
+        <p>Posted {{timedifference}}</p>
+        {{posting_marker}}
+      </span>
+    </a>
+  </div>
+</template>
+
 <template name="map">
-{{test}}
 <div class="map-container">
   {{> googleMap name="map" options=mapOptions}}
 </div>
@@ -74,20 +98,7 @@
     </div>
   </form>
   <div>
-    {{#each results}}
-    <div class="posting_container">
-    <a href="{{pathFor route='posting'}}" target="{{pathFor route='posting'}}">
-    <span class="postPreview">
-    <p><img src="{{postingImages.[0]}}"></p>
-    <p>{{title}}</p>
-    <p>Location: {{location}}</p>
-    <p>{{rentalrate}} /day</p>
-    <p>Posted {{timedifference}}</p>
-    {{posting_marker}}
-    </span>
-    </a>
-    </div>
-    {{/each}}
+  {{> pagination}}
   </div>
 </template>
 
@@ -186,6 +197,7 @@
   <p>Location: <a href="/s/{{location}}">{{location}}</a></p>
   <p>Address: {{address}}</p>
   <p>Rental rate: {{rentalrate}} /day</p>
+  <p>Category: {{category}}</p>
   <p>Posted {{timedifference}}</p>
   <p> {{#each postingImages}}
           <p><img src="{{this}}"></p>

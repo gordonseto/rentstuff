@@ -36,3 +36,15 @@ function buildRegExp(searchText) {
   var fullExp = exps.join('') + ".+";
   return new RegExp(fullExp, "i");
 }
+
+//Pagination
+Pages = new Meteor.Pagination(Postings, {
+	templateName: 'pagination',
+	itemTemplate: 'pagination_item',
+	dataMargin: 0,
+	availableSettings:{
+		perPage: true,
+		sort: true,
+		filters: true
+	}
+});

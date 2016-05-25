@@ -12,6 +12,7 @@
 	meteor add dburles:google-maps				for maps
 	meteor add doctorpangloss:filter-collections for filters
 	meteor add ejson							extended json
+	meteor add alethes:pages 					for paging
 */	
 
 
@@ -34,6 +35,24 @@ Meteor.startup(function() {
 	GoogleMaps.load();
 });
 
+//Pagination
+Pages = new Meteor.Pagination(Postings, {
+	templateName: 'pagination',
+	itemTemplate: 'pagination_item',
+	availableSettings:{
+		perPage: true,
+		sort: true,
+		filters: true
+	}
+});
+
+Pages.set({
+	perPage: 9,
+	sort: {
+		createdAt: -1
+	}
+})
+
 //Subscribe to usernames
 Meteor.subscribe("users");
 
@@ -51,6 +70,11 @@ Router.route('/s/:city', {
 	template: 'search',
 	data: function(){
 		var location = this.params.city;
+		Pages.set({
+			filters: {
+				location: location
+			}
+		})
 		Session.set('locationFilter', location);
 	}
 });
@@ -168,6 +192,42 @@ Router.route('/profile/:createdBy', function(){
 		}
 	});
 
+	Template.pagination.events({
+		'click .pagination_nav a': function(){
+			Temporary_Markers.remove({});
+		}
+	});
+
+	Template.pagination_item.helpers({
+		posting_marker: function(){
+			//Insert marker into collection
+			if(this.geocode_address){
+			postingId = this._id;
+			categoriesArray = Session.get('categoryFilter');
+				if(categoriesArray != null && categoriesArray.length != 0){
+					if(categoriesArray.indexOf(this.category) != -1){
+					Temporary_Markers.insert({lat: this.geocode_address.lat, 
+									lng: this.geocode_address.lng, 
+									postingId: postingId,
+									color: DEFAULT_MARKER});
+    				}
+    			} else{
+					Temporary_Markers.insert({lat: this.geocode_address.lat, 
+									lng: this.geocode_address.lng, 
+									postingId: postingId,
+									color: DEFAULT_MARKER});	
+    			}
+    		}
+    	},	
+		'timedifference': function(){
+
+			postedDate = this.createdAt;
+			currentDate = new Date();
+
+			return getTimeDifference(postedDate, currentDate);
+		}
+	});
+
 const DEFAULT_MARKER = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FE7569' 
 const GREEN_MARKER = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|009999';
 
@@ -192,7 +252,6 @@ const GREEN_MARKER = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&c
     			added: function(document){
     				var marker = new google.maps.Marker({
     					position: new google.maps.LatLng(document.lat, document.lng),
-    					animation: google.maps.Animation.DROP,
     					map: map.instance,
     					icon: document.color,
     					id: document._id,
@@ -341,10 +400,16 @@ function infoWindowContent(postingId){
 			filters_container = $('.filters-container');
 			if(filters_container.is(":visible")){
 				filters_container.slideUp(300);
-				//change button value
-				$('#filterstoggle').val("Filters");
+				Temporary_Markers.remove({});
 				//set category filter to null
 				Session.set('categoryFilter', null);
+				Pages.set({
+					filters: {
+						location: Session.get('locationFilter')
+					}
+				});
+				//change button value
+				$('#filterstoggle').val("Filters");
 				//unbold text
 				listelement = $('td');
 				for(i = 0; i < listelement.length; i++){
@@ -372,6 +437,8 @@ function infoWindowContent(postingId){
 			Temporary_Markers.update({postingId: this._id}, {$set: {color: DEFAULT_MARKER}});
 		}, //filters table events
 		'click #filters_table td': function(event){
+			Temporary_Markers.remove({});
+			var location = Session.get('locationFilter');
 			//get category that was clicked
 			clickedCategory = event.currentTarget.innerHTML.toLowerCase();
 			//get current category array
@@ -383,21 +450,45 @@ function infoWindowContent(postingId){
 				//if -1, clickedCategory is not in array, bold text and push to array
 				event.currentTarget.style.fontWeight = "bold";
 				categoriesArray.push(clickedCategory);
+				Pages.set({
+					filters: {
+						location: location,
+						category: {$in: categoriesArray}
+					}
+				});
 				Session.set('categoryFilter', categoriesArray);
 				} else{	//clickedCategory is in the array, remove from array and unbold
 					//remove from array
 					categoriesArray.splice(foundindex, 1);
 					//unbold
 					event.currentTarget.style.fontWeight = "";
-					if(categoriesArray.length == 0){	
-						//set as null if empty
-						categoriesArray = null;
+					if(categoriesArray == null || categoriesArray.length == 0){	
+						categoriesArray == null;
+						//if null, take off all category filters
+						Pages.set({
+							filters: {
+								location: location
+							}
+						});
+					} else {
+						Pages.set({
+							filters: {
+								location: location,
+								category: {$in: categoriesArray}
+							}
+						});
 					}
 					Session.set('categoryFilter', categoriesArray);
 				}
 			} else{ //categoriesArray does not exist
 				categoriesArray = [clickedCategory];
 				event.currentTarget.style.fontWeight = "bold";
+				Pages.set({
+					filters: {
+						location: location,
+						category: {$in: categoriesArray}
+					}
+				});			
 				Session.set('categoryFilter', categoriesArray);
 			} 
 		}

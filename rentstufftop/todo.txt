@@ -19,3 +19,4 @@ googe maps api key: AIzaSyCxnXWYmJJy6qeEEOFLf86bqK1vVw3t6ZA
 -different sorting
 -price range sorting
 -edit posting days of week disabled
+-fix pagination markers
