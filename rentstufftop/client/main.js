@@ -11,7 +11,7 @@
 	meteor add meteorhacks:search-source		for searchbox
 	meteor add dburles:google-maps				for maps
 	meteor add doctorpangloss:filter-collections for filters
-	meteor add ejson
+	meteor add ejson							extended json
 */	
 
 
@@ -150,6 +150,7 @@ Router.route('/profile/:createdBy', function(){
 		'submit': function(){
 			event.preventDefault();
 			var location = $('#location').val();
+			location = location.toLowerCase();
 			Router.go('/s/'+location);
 		}
 	})
@@ -361,6 +362,7 @@ function infoWindowContent(postingId){
 		'submit': function(event, template){
 			event.preventDefault();
 			var location = $('#location').val();
+			location = location.toLowerCase();
 			Router.go('/s/'+location);
 		},	//mouseenter, change color to green, mouseleave, change to default
 		'mouseenter .posting_container': function(event, template){
