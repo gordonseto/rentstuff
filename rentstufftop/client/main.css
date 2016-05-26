@@ -1,43 +1,210 @@
+html, body{
+	margin: 0;
+	padding: 0;
+}
+
+a:{
+	font-weight: bold;
+	color: #474747;
+	text-decoration: none;
+}
+
+a:hover{
+	text-decoration: none;
+}
+
+a:active{
+	text-decoration: none;
+}
+
+a:visited{
+	text-decoration: none;
+}
+
+.custom_bold{
+	font-weight: bold;
+	color: #474747;	
+}
+
+.navigation_bar{
+	background-color: #00B374;
+	padding-top: 20px;
+	padding-bottom: 30px;
+	box-shadow: 0px .5px .5px #7A7A7A;
+}
+
+.hometitle {
+	float: left;
+	margin-left: 5%;
+	margin-bottom: 5px;
+	top: 5%;
+}
+
+.hometitle h2{
+	margin: 0px;
+}
+
+.hometitle a:link {
+	color: white;
+	padding-bottom: 20px;
+}
+
+.hometitle a:visited{
+	text-decoration: none;
+}
+
+.hometitle a:active{
+	text-decoration: none;
+}
+
+.navigation_links{
+	float: right;
+	margin-right: 2.5%;
+	padding-bottom: 3px;
+}
+
+.navigation_links h5{
+	margin: 0px;
+}
+
+.navigation_links a{
+	padding: 15px;
+	padding-top: 30px;
+	width: 15px;
+	font-weight: bold;
+}
+
+.navigation_links a:hover{
+	background-color: #02DE91;
+}
+
+.navigation_links a:link{
+	color: white;
+}
+
+.navigation_links a:visited{
+	color: white;
+}
+
+.navigation_links a:active{
+	color: white;
+}
+
+#lend {
+	padding: 5px;
+	border: 2px solid white;
+	border-radius: 2px;
+	padding-right: 5px;
+	padding-left: 5px;	
+}
+
+.location_search{
+	padding-top: 20px;
+	margin-left: 5%;
+	font-size: 16px;
+}
+
+.location_search input{
+	margin-left: 10px;
+	outline: none;
+	border: none;
+}
+
+.location_search input:focus{
+	outline:none;
+	border: none;
+}
+
+#filterstoggle{
+	background: white;
+	box-shadow: none;
+	border: none;
+	font-weight: bold;
+	padding-left: 0;
+	margin: none;
+}
+
+#filterstoggle:focus{
+	outline:none;
+}
+
+#maptoggle{
+	background: white;
+	box-shadow: none;
+	border: none;
+	font-weight: bold;
+}
+
+#maptoggle:focus{
+	outline:none;
+}
+
+.filters-container{
+	display:none;
+}
+
 .postPreview{
-	border: solid 1px black;
-	margin: 20px;
-	padding: 10px;
+	margin-right: 20px;
+	margin-left: 15px;
 	float: left;
 	color: black;
-	text-align: center;
-	width: 150px;
-	height: 150px;
+	width: 220px;
+	height: 400px;
 }
 
 .postPreview:hover{
 	cursor: pointer;
 }
 
-.postPreview img{
+.postPreview img {
+	position: relative;
+	top: 50%;
+	transform: translateY(-50%);
 	width: auto;
 	height: auto;
-	max-width: 100px;
-	max-height: 100px;
+	max-width: 220px;
+	max-height: 294px;
 }
 
-.hometitle{
+.posting_image {
+	background-color: #EDEDED;
+	width: 220px;
+	height: 293.3333px;
+}
+
+.posting_time {
+	margin-top: 2px;
+	font-size: 10px;
+}
+
+.posting_title {
+	font-weight: bold;
+	max-width: 220px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.map_postPreview{
+	border: solid 1px black;
+	margin: 5px;
+	padding: 2px;
+	float: left;
 	color: black;
-	text-decoration-line: none;
+	text-align: center;
+	width: 160px;
+	height: 240px;
 }
 
-[name="navigation"]{
-	color: black;
+.map_postPreview:hover{
+	cursor: pointer;
 }
 
-.navigation{
-	color: black;
-}
-
-img {
+.map_postPreview img {
 	width: auto;
 	height: auto;
-	max-width: 300px;
-	max-height: 300px;
+	max-width: 160px;
+	max-height: 240px;
 }
 
 a:hover{
@@ -47,19 +214,253 @@ a:hover{
 .map-container{
 	width: 100%;
 	max-width: 100%;
-	height: 500px;
-}
-
-.posting-map-container{
-	height: 300px;
-	width: 300px;
+	height: 800px;
 }
 
 td:hover{
 	cursor: pointer;
 }
 
-.filters-container{
-	display:none;
+.content-right{
+	width: 40%;
+	margin-left: 60%;
+	margin-top: 10px;
+	height: 80%;
 }
 
+.content-left{
+	position: fixed;
+	width: 55%;
+	margin-left: 5%;
+	overflow-y: auto;
+	overflow-x: hidden;
+	height: 80%;
+}
+
+.pagination {
+  float: left;
+  padding-left: 2.5%;
+  margin: 20px 0;
+  border-radius: 4px;
+}
+
+.pagination > li {
+  display: inline;
+}
+
+.pagination > li > a,
+.pagination > li > span {
+  color: #00B374;
+  position: relative;
+  float: left;
+  padding: 6px 12px;
+  line-height: 1.428571429;
+  text-decoration: none;
+  background-color: #ffffff;
+  border: 1px solid #dddddd;
+  font-weight: bold;
+  margin: 5px;
+}
+
+.pagination > .active > a,
+.pagination > .active > span,
+.pagination > .active > a:hover,
+.pagination > .active > span:hover,
+.pagination > .active > a:focus,
+.pagination > .active > span:focus {
+  z-index: 2;
+  color: #808080;
+  cursor: default;
+  background-color: #E3E3E3;
+  border-color: #C4C4C4;
+}
+
+.posting_content_left{
+	float: left;
+	margin-top: 40px;
+}
+
+.posting_content_left img{
+	width: 600px;
+	height: auto;
+	max-width: 600px;
+	max-height: 800px;
+	margin-bottom: 10px;
+	margin-left: 7.5%;
+}
+
+.posting_content_right{
+	float: right;
+	margin-top: 40px;
+	width: 600px;	
+	margin-right: 17.5%;
+}
+
+.posting_content_right h2{
+	margin-bottom: 0px;
+}
+
+.posting_content_right a{
+	font-weight: bold;
+	color: #474747;
+}
+
+.posting_title{
+	margin-top: 20px;
+	margin-bottom: 5px;
+	color: #474747;
+	font-weight: bold;
+}
+
+.posting-map-container{
+	height: 350px;
+	width: 350px;
+}
+
+.calendar_container{
+	float: right;
+}
+
+.datepicker table tr td,
+.datepicker table tr th {
+  text-align: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 0px;
+  border: 1px solid #E6E3E3;
+  font-weight: bold;
+}
+
+.datepicker table tr td.day:hover,
+.datepicker table tr td.focused {
+  background: #00B374;
+  color: white;
+  cursor: pointer;
+}
+
+.datepicker table tr td.disabled,
+.datepicker table tr td.disabled:hover {
+  background: #F0F0F0;
+  color: #DEDEDE;
+  cursor: default;
+}
+
+
+.datepicker table tr td.active:focus,
+.datepicker table tr td.active.highlighted:focus,
+.datepicker table tr td.active.focus,
+.datepicker table tr td.active.highlighted.focus {
+  color: #ffffff;
+  background-color: #00B374;
+  border: none;
+}
+
+.datepicker table tr td.active:hover,
+.datepicker table tr td.active.highlighted:hover {
+  color: #ffffff;
+  background-color: #00B374;
+  border: none;
+}
+
+.datepicker table tr td.active:active,
+.datepicker table tr td.active.highlighted:active,
+.datepicker table tr td.active.active,
+.datepicker table tr td.active.highlighted.active,
+.open > .dropdown-toggle.datepicker table tr td.active,
+.open > .dropdown-toggle.datepicker table tr td.active.highlighted {
+  color: #ffffff;
+  background-color: #00B374;
+  border: none;
+}
+
+.datepicker table tr td.active:focus,
+.datepicker table tr td.active.highlighted:focus,
+.datepicker table tr td.active.focus,
+.datepicker table tr td.active.highlighted.focus {
+  color: #ffffff;
+  background-color: #00B374;
+  border-color: #193c5a;
+}
+
+.datepicker table tr td.active:hover,
+.datepicker table tr td.active.highlighted:hover {
+  color: #ffffff;
+  background-color: #00B374;
+  border-color: #285e8e;
+}
+
+
+.datepicker table tr td.active:active,
+.datepicker table tr td.active.highlighted:active,
+.datepicker table tr td.active.active,
+.datepicker table tr td.active.highlighted.active,
+.open > .dropdown-toggle.datepicker table tr td.active,
+.open > .dropdown-toggle.datepicker table tr td.active.highlighted {
+  color: #ffffff;
+  background-color: #00B374;
+  border-color: #285e8e;
+}
+
+
+.datepicker table tr td.active:active:hover,
+.datepicker table tr td.active.highlighted:active:hover,
+.datepicker table tr td.active.active:hover,
+.datepicker table tr td.active.highlighted.active:hover,
+.open > .dropdown-toggle.datepicker table tr td.active:hover,
+.open > .dropdown-toggle.datepicker table tr td.active.highlighted:hover,
+.datepicker table tr td.active:active:focus,
+.datepicker table tr td.active.highlighted:active:focus,
+.datepicker table tr td.active.active:focus,
+.datepicker table tr td.active.highlighted.active:focus,
+.open > .dropdown-toggle.datepicker table tr td.active:focus,
+.open > .dropdown-toggle.datepicker table tr td.active.highlighted:focus,
+.datepicker table tr td.active:active.focus,
+.datepicker table tr td.active.highlighted:active.focus,
+.datepicker table tr td.active.active.focus,
+.datepicker table tr td.active.highlighted.active.focus,
+.open > .dropdown-toggle.datepicker table tr td.active.focus,
+.open > .dropdown-toggle.datepicker table tr td.active.highlighted.focus {
+  color: #ffffff;
+  background-color: #00B374;
+  border-color: #193c5a;
+}
+
+#book-button{
+	width: 218px;
+	height: 40px;
+	color: white;
+	background-color: #00B374;
+	text-shadow: 1px 1px blur black;
+	font-size: 16px;
+	border: none;
+	border-radius: 3px;
+	font-weight: bold;
+}
+
+.new_posting_container{
+	margin-top: 80px;
+	margin-left: 32.5%;
+}
+
+.new_posting_container h3{
+	margin-left: 25%;
+}
+
+.new_posting_container input{
+	height: 30px;
+	width: 600px;
+	padding-left: 5px;
+}
+
+#new_posting_description{
+	height: 400px;
+	width: 600px;
+}
+
+#region input{
+	width: 500px;
+}
+
+#postalcode input{
+	width: 100px;
+}

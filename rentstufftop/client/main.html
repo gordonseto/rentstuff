@@ -2,24 +2,28 @@
 <head>
   <title>Rent stuff</title>
 </head>
-<div class="hometitle">
-<a href="{{pathFor route='home'}}">
-<h1>Rent stuff</h1>
-</a>
-</div>
 {{> navigation}}
   {{> yield}}
 </template>
 
 <template name="navigation" class="navigation">
-  <a href="{{pathFor route='newPosting'}}">New Posting</a>
-  {{#if currentUser}}
-  <a href="/profile/{{loggedinUser}}">{{loggedinUser}}</a>
-  <a href="#" class="logout">Logout</a>
-  {{else}}
-  <a href="{{pathFor route='login'}}">Login</a>
-  <a href="{{pathFor route='register'}}">Register</a>
-  {{/if}}
+<div class="navigation_bar">
+  <div class="hometitle">
+    <a href="{{pathFor route='home'}}"><h2>rentstuff</h2></a>
+  </div>
+  <div class="navigation_links">
+    <h5>
+    <a href="{{pathFor route='newPosting'}}" id="lend">+ lend</a>
+    {{#if currentUser}}
+      <a href="/profile/{{loggedinUser}}">{{loggedinUser}}</a>
+      <a href="#" class="logout">logout</a>
+    {{else}}
+      <a href="{{pathFor route='login'}}">login</a>
+      <a href="{{pathFor route='register'}}">register</a>
+    {{/if}}
+    </h5>
+  </div>
+</div>
 </template>
 
 <template name="home">
@@ -36,7 +40,7 @@
 <template name="pagination">
 <div class="row">{{> pages}}</div>
 <div class="row">
-  <div class="pagination_nav">
+  <div class="pagination_nav" id="pagination_nav">
     {{> pagesNav}}
   </div>
 </div>
@@ -46,11 +50,12 @@
   <div class="posting_container">
     <a href="{{pathFor route='posting'}}" target="{{pathFor route='posting'}}">
       <span class="postPreview">
-        <p><img src="{{postingImages.[0]}}"></p>
-        <p>{{title}}</p>
-        <p>Location: {{location}}</p>
-        <p>{{rentalrate}} /day</p>
-        <p>Posted {{timedifference}}</p>
+        <div class="posting_image">
+        <img src="{{postingImages.[0]}}">
+        </div>
+        <div class="posting_time">{{timedifference}}</div>
+        <div class="posting_title">{{title}}</div>
+        <div class="posting_rate">${{rentalrate}} /day</div>
         {{posting_marker}}
       </span>
     </a>
@@ -64,41 +69,49 @@
 </template>
 
 <template name="filter">
+<div class="location_search">
   <form>
-  <p>Searching near <input id="location" type="text" placeholder="city" value="{{city}}"/></p>
-  <p><input type="button" id="filterstoggle" class="filterstoggle" value="Filters"><input type="button" id="maptoggle" class="maptoggle" value="Hide Map"></p>
+  <p><span class="glyphicon glyphicon-search" aria-hidden="true"></span><input id="location" type="text" placeholder="city" value="{{city}}"/></p>
+  </form>
+</div>
+  <div class="content-left">
+  <form>
+  <p><input type="button" id="filterstoggle" class="filterstoggle" value="filters"></p>
     <div class="filters-container">
       <table id="filters_table">
       <thead>
       <tr>
-        <th scope="col">CATEGORIES</th>
+        <th scope="col">categories</th>
       </tr>
       </thead>
       <tbody>
       <tr>
-        <td>SNOW</td>
+        <td>snow</td>
       </tr>
       <tr>
-        <td>WATER</td>
+        <td>water</td>
       </tr>
       <tr>
-        <td>SPORT</td>
+        <td>sport</td>
       </tr>
       <tr>
-        <td>PLAY</td>
+        <td>play</td>
       </tr>
       <tr>
-        <td>UTILITY</td>
+        <td>utility</td>
       </tr>
       </tbody>
       </table>
     </div>
+  </form>
+  <div>
+    {{> pagination}}
+  </div>
+</div>
+  <div class="content-right">
     <div class="map-container">
       {{> googleMap name="map" options=mapOptions}}
     </div>
-  </form>
-  <div>
-  {{> pagination}}
   </div>
 </template>
 
@@ -149,13 +162,20 @@
 </template>
 
 <template name="newPosting">
+<div class="new_posting_container">
   <form>
-  {{location_search}}
-  <p>Title: <input type="text" name="title" required></p>
-  <p>Description: <input type="text" name="description"></p>
-  <p>Location: <input type="text" name="location" value="{{locationFilter}}" required></p>
-  <p>Address: <input type="text" name="address" required></p>
-  <p>Rental rate: <input type="text" name="rentalrate" required> /day</p>
+  <p><input type="text" name="title" placeholder="Title (Required)" required></p>
+  <p><textarea id="new_posting_description" placeholder="Description (Optional)"></textarea></p>
+  <br><br>
+  <p>
+    <input type="text" name="location" placeholder="City (Required)" required>
+  </p>
+  <p>
+      <input type="text" id="region" placeholder="Province/ State (Required)" required>
+      <input type="text" id="postalcode" placeholder="Postal  Code (Required)" required>
+  </p>
+  <p><input type="text" name="address" placeholder="Street Address (Optional)"></p>
+  <p>$ <input type="text" name="rentalrate" required> /day</p>
   <div class="category-select">
     Category: <input type="radio" name="category-select" value="snow" required> SNOW   <input type="radio" name="category-select" value="water" required> WATER   <input type="radio" name="category-select" value="sport" required> SPORT   <input type="radio" name="category-select" value="play" required> PLAY    <input type="radio" name="category-select" value="utility" required> UTILITY
   </div>
@@ -182,6 +202,7 @@
   <p>{{> imageupload}}</p>
   <p><input type="submit" value="Post"></p>
   </form>
+</div>
 </template>
 
 <template name="posting_map">
@@ -191,30 +212,41 @@
 </template>
 
 <template name="posting">
-  <p>Title: {{title}}</p>
-  <p>Posted by: <a href="{{pathFor route='profile'}}">{{createdBy}}</a></p>
-  <p>Description: {{description}}</p>
-  <p>Location: <a href="/s/{{location}}">{{location}}</a></p>
-  <p>Address: {{address}}</p>
-  <p>Rental rate: {{rentalrate}} /day</p>
-  <p>Category: {{category}}</p>
-  <p>Posted {{timedifference}}</p>
+<div class="posting_content_left">
   <p> {{#each postingImages}}
           <p><img src="{{this}}"></p>
-      {{/each}}</p>
+      {{/each}}
+  </p>
+</div>
+<div class="posting_content_right">
+  <a href="{{pathFor route='posting'}}">
+    <h2>{{title}}</h2>
+  </a>
+  <p><a href="/s/{{location}}">{{location}}</a></p>
+  <div class="posting_title">Description</div>
+  <p> {{description}}</p>
+  <p><h3><div class="custom_bold">${{rentalrate}} /day</div></h3></p>
+  <br><br><br><br>
+  <p><em>Posted {{timedifference}}</em></p>
+  <p><div class="custom_bold">Category</div> {{category}}</p>
+  <p>Posted by: <a href="{{pathFor route='profile'}}">{{createdBy}}</a></p>
+  <div class="calendar_container">
     {{> calendar}}
+  </div>
   {{#if geocode_address}}
   {{> posting_map}}
+  {{/if}}
+  <br><br>
+  {{#if posting_is_saved}}
+    <p><a class="posting-saved">Posting Saved</a></p>
+  {{else}}  
+    <p><a class="save-posting">+ Save Posting</a></p>
   {{/if}}
   {{#if isOwner}}
     <p><a href="{{pathFor route='edit'}}">Edit Posting</a></p>
     <p><a class='bump'>Bump Posting</a></p>
   {{/if}}
-  {{#if posting_is_saved}}
-    <p><a class="posting-saved">Posting Saved</a></p>
-  {{else}}  
-    <p><a class="save-posting">Save Posting</a></p>
-  {{/if}}
+</div>
 </template>
 
 <template name="edit">
@@ -238,18 +270,11 @@
 
 <template name="calendar">
   <form id="book-date">
-    <div class="row">
-      <div class="col-xs-5">
-        <div class="form-group">
-          <div id="datepicker"></div>
-        </div>
-      <p><em>Equipment can only be booked up to one year ahead.</em></p>
-      </div>
-      <div class="col-xs-4">
-        <div class="form-group">
-          <button class="btn btn-success btn-block">Book</button>
-        </div>
-      </div>
+    <div class="form-group">
+      <div id="datepicker"></div>
+    </div>
+    <div class="form-group">
+        <button id="book-button">Book</button>
     </div>
   </form>
 {{blockDates}}

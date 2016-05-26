@@ -48,7 +48,7 @@ Pages = new Meteor.Pagination(Postings, {
 });
 
 Pages.set({
-	perPage: 9,
+	perPage: 12,
 	sort: {
 		createdAt: -1
 	}
@@ -116,7 +116,7 @@ Router.route('/success', {
 	name: 'success'
 });
 
-Router.route('/newPosting',{
+Router.route('/lend',{
 	name: 'newPosting',
 	onAfterAction: function(){
 		if(!Meteor.userId()){	
@@ -323,7 +323,7 @@ function infoWindowContent(postingId){
 	if(posting.postingImages[0]){	//check if image
 	contentString = '<div class="posting_container">'+
 					'<a href="/posting/'+posting._id+'">'+
-					'<span class="postPreview">'+
+					'<span class="map_postPreview">'+
 					'<p><img src="'+posting.postingImages[0]+'"></p>'+
 					'<p>'+posting.title+'</p>'+
 					'<p>'+posting.rentalrate+' /day</p>'+
@@ -333,7 +333,7 @@ function infoWindowContent(postingId){
 	}else {
 	contentString = '<div class="posting_container">'+
 					'<a href="/posting/'+posting._id+'">'+
-					'<span class="postPreview">'+
+					'<span class="map_postPreview">'+
 					'<p><img></p>'+
 					'<p>'+posting.title+'</p>'+
 					'<p>'+posting.rentalrate+' /day</p>'+
@@ -408,7 +408,7 @@ function infoWindowContent(postingId){
 					}
 				});
 				//change button value
-				$('#filterstoggle').val("Filters");
+				$('#filterstoggle').val("filters");
 				//unbold text
 				listelement = $('td');
 				for(i = 0; i < listelement.length; i++){
@@ -417,7 +417,7 @@ function infoWindowContent(postingId){
 			} else{	
 				//if showing, change value of button
 				filters_container.slideDown(300);
-				$('#filterstoggle').val("Filters X");
+				$('#filterstoggle').val("filters X");
 			}
 		},
 		'click .posting_container a': function(event){

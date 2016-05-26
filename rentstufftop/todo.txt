@@ -9,9 +9,7 @@ googe maps api key: AIzaSyCxnXWYmJJy6qeEEOFLf86bqK1vVw3t6ZA
 -change thumbnail process
 -fix profile bookings order
 -profile calendars for days booked and loans
--make new pages when front page too big
 -add map resize for markers
--keep city on navigation
 -fix filter searches for localization
 -impulse multiple items one location
 -edit radioboxes only select on refresh
@@ -21,3 +19,4 @@ googe maps api key: AIzaSyCxnXWYmJJy6qeEEOFLf86bqK1vVw3t6ZA
 -edit posting days of week disabled
 -fix pagination markers
 -fix pagination pages when filters turn off
+-post preview hover, show more pictures
