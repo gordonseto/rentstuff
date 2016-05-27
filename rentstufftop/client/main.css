@@ -186,14 +186,12 @@ a:visited{
 }
 
 .map_postPreview{
-	border: solid 1px black;
-	margin: 5px;
-	padding: 2px;
+	padding: 0px;
+	margin: 0px;
 	float: left;
 	color: black;
-	text-align: center;
-	width: 160px;
-	height: 240px;
+	width: 176px;
+	height: 275px;
 }
 
 .map_postPreview:hover{
@@ -201,10 +199,34 @@ a:visited{
 }
 
 .map_postPreview img {
+	margin: 0px;
+	padding: 0px;
+	position: relative;
+	top: 50%;
+	transform: translateY(-50%);
 	width: auto;
 	height: auto;
-	max-width: 160px;
-	max-height: 240px;
+	max-width: 176px;
+	max-height: 235.2px;
+}
+
+.map_posting_image {
+	background-color: #EDEDED;
+	width: 176px;
+	height: 235.2px;
+}
+
+.map_posting_time {
+	margin-top: 2px;
+	font-size: 10px;
+}
+
+.map_posting_title {
+	font-weight: bold;
+	max-width: 220px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 a:hover{
@@ -440,6 +462,7 @@ td:hover{
 .new_posting_container{
 	margin-top: 80px;
 	margin-left: 32.5%;
+	margin-bottom: 300px;
 }
 
 .new_posting_container h3{
@@ -450,17 +473,76 @@ td:hover{
 	height: 30px;
 	width: 600px;
 	padding-left: 5px;
+	border: 1px solid black;
 }
 
 #new_posting_description{
 	height: 400px;
 	width: 600px;
+	border: 1px solid black;
 }
 
-#region input{
-	width: 500px;
+.new_posting_container .region input{
+	width: 390px;
+	margin-right: 10px;
 }
 
-#postalcode input{
-	width: 100px;
+.new_posting_container .postalcode input{
+	width: 196px;
+}
+
+.new_posting_container .rentalrate input{
+	width: 88px;
+}
+
+.new_posting_container .save_details input{
+	margin-left: 240px;
+	width: auto;
+	vertical-align: middle;
+}
+
+.new_posting_container .category-select {
+	margin-left: 40px;
+}
+
+.new_posting_container .category-select input{
+	width: auto;
+	vertical-align: middle;
+	margin-left: 20px;
+}
+
+.new_posting_container .new-posting-datepicker{
+	float: left;
+	margin-bottom: 20px;
+}
+
+.new_posting_container .disabled-dates{
+	margin-top: 0px;
+	float: left;
+	margin-left: 100px;
+}
+
+.new_posting_container .disabled-dates input{
+	width: auto;
+	vertical-align: middle;
+}
+
+.new_posting_container .image_upload{
+	clear: both;
+	margin-top: 10px;
+}
+
+.new_posting_container .image_upload input{
+	outline: none;
+	border: none;
+}
+
+.new_posting_container .new_posting_submit input{
+	margin-top: 100px;
+	background-color: #00B374;
+	color: white;
+	font-weight: bold;
+	border: none;
+	box-shadow: 1px 1px 2px black;
+	height: 40px;
 }

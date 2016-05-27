@@ -37,31 +37,6 @@
 <p> {{> filter}} </p>
 </template>
 
-<template name="pagination">
-<div class="row">{{> pages}}</div>
-<div class="row">
-  <div class="pagination_nav" id="pagination_nav">
-    {{> pagesNav}}
-  </div>
-</div>
-</template>
-
-<template name="pagination_item">
-  <div class="posting_container">
-    <a href="{{pathFor route='posting'}}" target="{{pathFor route='posting'}}">
-      <span class="postPreview">
-        <div class="posting_image">
-        <img src="{{postingImages.[0]}}">
-        </div>
-        <div class="posting_time">{{timedifference}}</div>
-        <div class="posting_title">{{title}}</div>
-        <div class="posting_rate">${{rentalrate}} /day</div>
-        {{posting_marker}}
-      </span>
-    </a>
-  </div>
-</template>
-
 <template name="map">
 <div class="map-container">
   {{> googleMap name="map" options=mapOptions}}
@@ -74,7 +49,7 @@
   <p><span class="glyphicon glyphicon-search" aria-hidden="true"></span><input id="location" type="text" placeholder="city" value="{{city}}"/></p>
   </form>
 </div>
-  <div class="content-left">
+<div class="content-left">
   <form>
   <p><input type="button" id="filterstoggle" class="filterstoggle" value="filters"></p>
     <div class="filters-container">
@@ -105,14 +80,28 @@
     </div>
   </form>
   <div>
-    {{> pagination}}
+    {{#each results}}
+    <div class="posting_container">
+    <a href="{{pathFor route='posting'}}" target="{{pathFor route='posting'}}">
+      <span class="postPreview">
+        <div class="posting_image">
+        <img src="{{postingImages.[0]}}">
+        </div>
+        <div class="posting_time">{{timedifference}}</div>
+        <div class="posting_title">{{title}}</div>
+        <div class="posting_rate">${{rentalrate}} /day</div>
+        {{posting_marker}}
+      </span>
+    </a>
+    </div>
+    {{/each}}
   </div>
 </div>
-  <div class="content-right">
+<div class="content-right">
     <div class="map-container">
       {{> googleMap name="map" options=mapOptions}}
     </div>
-  </div>
+</div>
 </template>
 
 <template name="searchbox">
@@ -165,42 +154,61 @@
 <div class="new_posting_container">
   <form>
   <p><input type="text" name="title" placeholder="Title (Required)" required></p>
-  <p><textarea id="new_posting_description" placeholder="Description (Optional)"></textarea></p>
+  <p><textarea id="new_posting_description" name="description" placeholder="Description (Optional)"></textarea></p>
   <br><br>
   <p>
-    <input type="text" name="location" placeholder="City (Required)" required>
+    <input type="text" name="city" placeholder="City (Required)" required>
   </p>
   <p>
-      <input type="text" id="region" placeholder="Province/ State (Required)" required>
-      <input type="text" id="postalcode" placeholder="Postal  Code (Required)" required>
+    <span class="region">
+        <input type="text" id="region" name="region" placeholder="Province/State (Required)" required>
+    </span>
+    <span class="postalcode">
+        <input type="text" id="postalcode" name="postalcode" placeholder="Postal Code (Required)" required>
+    </span>
   </p>
-  <p><input type="text" name="address" placeholder="Street Address (Optional)"></p>
-  <p>$ <input type="text" name="rentalrate" required> /day</p>
-  <div class="category-select">
-    Category: <input type="radio" name="category-select" value="snow" required> SNOW   <input type="radio" name="category-select" value="water" required> WATER   <input type="radio" name="category-select" value="sport" required> SPORT   <input type="radio" name="category-select" value="play" required> PLAY    <input type="radio" name="category-select" value="utility" required> UTILITY
+  <p>
+    <input type="text" name="address" placeholder="Street Address (Optional)">
+  </p>
+  <p>
+    $ <span class="rentalrate"><input type="text" name="rentalrate" placeholder="(Required)" required></span> /day
+    <span class="save_details">
+      <input type="checkbox" id="save_details"> Save Location Details to Account
+    </span>
+  </p>
+  <br>
+  <p>
+    Category:
+    <span class="category-select">
+      <input type="radio" name="category-select" value="snow" required> SNOW   <input type="radio" name="category-select" value="water" required> WATER   <input type="radio" name="category-select" value="sport" required> SPORT   <input type="radio" name="category-select" value="play" required> PLAY    <input type="radio" name="category-select" value="utility" required> UTILITY
+    </span>
+  </p>
+  <br>
+  <p>
+  <div class="new-posting-datepicker">
+    <div id="new-posting-datepicker"></div>
   </div>
-    <div class="row">
-      <div class="col-xs-5">
-        <div class="form-group">
-          <div id="new-posting-datepicker"></div>
-        </div>
-      </div>
-      <div class="col-xs-6">
-        <br>
-        <div class="disabled-dates">
-          <strong>Disabled Dates:</strong>
-          <p><input type="checkbox" id="all-dates" value="0"> All Sundays</p>
-          <p><input type="checkbox" id="1" value="1"> All Mondays</p>
-          <p><input type="checkbox" id="2" value="2"> All Tuesdays</p>
-          <p><input type="checkbox" id="3" value="3"> All Wednesdays</p>
-          <p><input type="checkbox" id="3" value="4"> All Thursdays</p>
-          <p><input type="checkbox" id="3" value="5"> All Fridays</p>
-          <p><input type="checkbox" id="3" value="6"> All Saturdays</p>
-        </div>
-      </div>
-    </div>
-  <p>{{> imageupload}}</p>
-  <p><input type="submit" value="Post"></p>
+  <div class="disabled-dates">
+  <div class="custom_bold">Disabled Dates:</div>
+      <p><input type="checkbox" id="all-dates" value="0"> All Sundays</p>
+      <p><input type="checkbox" id="1" value="1"> All Mondays</p>
+      <p><input type="checkbox" id="2" value="2"> All Tuesdays</p>
+      <p><input type="checkbox" id="3" value="3"> All Wednesdays</p>
+  </div>
+  <br>
+  <div class="disabled-dates">
+      <p><input type="checkbox" id="3" value="4"> All Thursdays</p>
+      <p><input type="checkbox" id="3" value="5"> All Fridays</p>
+      <p><input type="checkbox" id="3" value="6"> All Saturdays</p>
+  </div>
+  </p>
+  <br>
+  <div class="image_upload">
+    <p>{{> imageupload}}</p>
+  </div>
+  <div class="new_posting_submit">
+    <input type="submit" value="Post">
+  </div>
   </form>
 </div>
 </template>
@@ -222,7 +230,7 @@
   <a href="{{pathFor route='posting'}}">
     <h2>{{title}}</h2>
   </a>
-  <p><a href="/s/{{location}}">{{location}}</a></p>
+  <p><a href="/s/{{city}}">{{city}}</a></p>
   <div class="posting_title">Description</div>
   <p> {{description}}</p>
   <p><h3><div class="custom_bold">${{rentalrate}} /day</div></h3></p>
@@ -264,7 +272,7 @@
           <p><img src="{{this}}"><a href='#' class="delete-image">[delete]</a></p>
       {{/each}}</p>
   <p>{{> imageupload}}</p>
-  <p><input type="submit" value="Save"></p>
+    <input type="submit" value="Save">
   </form>
 </template>
 

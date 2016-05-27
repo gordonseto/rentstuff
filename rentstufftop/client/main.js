@@ -12,7 +12,6 @@
 	meteor add dburles:google-maps				for maps
 	meteor add doctorpangloss:filter-collections for filters
 	meteor add ejson							extended json
-	meteor add alethes:pages 					for paging
 */	
 
 
@@ -35,25 +34,6 @@ Meteor.startup(function() {
 	GoogleMaps.load();
 });
 
-//Pagination
-Pages = new Meteor.Pagination(Postings, {
-	templateName: 'pagination',
-	itemTemplate: 'pagination_item',
-	onReloadPage1: true,
-	availableSettings:{
-		perPage: true,
-		sort: true,
-		filters: true
-	}
-});
-
-Pages.set({
-	perPage: 12,
-	sort: {
-		createdAt: -1
-	}
-})
-
 //Subscribe to usernames
 Meteor.subscribe("users");
 
@@ -72,12 +52,6 @@ Router.route('/s/:city', {
 	data: function(){
 		//get location from url
 		var location = this.params.city;
-		//set pagination filter to that location
-		Pages.set({
-			filters: {
-				location: location
-			}
-		})
 		//set locationFilter for uses later
 		Session.set('locationFilter', location);
 	}
@@ -195,47 +169,6 @@ Router.route('/profile/:createdBy', function(){
 		}
 	});
 
-	Template.pagination.events({
-		'click .pagination_nav a': function(){
-			//remove markers each page switch
-			Temporary_Markers.remove({});
-		}
-	});
-
-	Template.pagination_item.helpers({
-		posting_marker: function(){
-			//Insert marker into collection
-			if(this.geocode_address){
-			postingId = this._id;
-			categoriesArray = Session.get('categoryFilter');
-			//check if categoriesArray is null or []
-				if(categoriesArray != null && categoriesArray.length != 0){
-					//if it is, check if the posting's category lies in the array
-					if(categoriesArray.indexOf(this.category) != -1){
-					//if != -1, it is in the array
-					Temporary_Markers.insert({lat: this.geocode_address.lat, 
-									lng: this.geocode_address.lng, 
-									postingId: postingId,
-									color: DEFAULT_MARKER});
-    				}
-    			} else{
-    				//if categoriesArray is null or [], insert all postings
-					Temporary_Markers.insert({lat: this.geocode_address.lat, 
-									lng: this.geocode_address.lng, 
-									postingId: postingId,
-									color: DEFAULT_MARKER});	
-    			}
-    		}
-    	},	
-		'timedifference': function(){
-
-			postedDate = this.createdAt;
-			currentDate = new Date();
-
-			return getTimeDifference(postedDate, currentDate);
-		}
-	});
-
 const DEFAULT_MARKER = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FE7569' 
 const GREEN_MARKER = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|009999';
 
@@ -324,9 +257,11 @@ function infoWindowContent(postingId){
 	contentString = '<div class="posting_container">'+
 					'<a href="/posting/'+posting._id+'">'+
 					'<span class="map_postPreview">'+
-					'<p><img src="'+posting.postingImages[0]+'"></p>'+
-					'<p>'+posting.title+'</p>'+
-					'<p>'+posting.rentalrate+' /day</p>'+
+					'<div class="map_posting_image">'+
+					'<img src="'+posting.postingImages[0]+'">'+
+					'</div>'+
+					'<div class="map_posting_title">'+posting.title+'</div>'+
+					'<div class="map_posting_rate">$'+posting.rentalrate+' /day</div>'+
 					'</span>'+
 					'</a>'+
 					'</div>';
@@ -334,10 +269,11 @@ function infoWindowContent(postingId){
 	contentString = '<div class="posting_container">'+
 					'<a href="/posting/'+posting._id+'">'+
 					'<span class="map_postPreview">'+
-					'<p><img></p>'+
-					'<p>'+posting.title+'</p>'+
-					'<p>'+posting.rentalrate+' /day</p>'+
-					'</span>'+
+					'<div class="map_posting_image">'+
+					'<img>'+
+					'</div>'+
+					'<div class="map_posting_title">'+posting.title+'</div>'+
+					'<div class="map_posting_rate">$'+posting.rentalrate+' /day</div>'+					'</span>'+
 					'</a>'+
 					'</div>';
 	}
@@ -353,6 +289,7 @@ function infoWindowContent(postingId){
 			//to location returned from function
 			searchAddress(location, function(geocode_address){
 				GoogleMaps.maps.map.instance.setCenter(geocode_address);
+				Session.set('geocode_address', geocode_address);
 				});
 				map = {
 					center: new google.maps.LatLng(51.0486151, -114.0708459),
@@ -361,6 +298,62 @@ function infoWindowContent(postingId){
 				return map;
 			}
 		},
+		results: function(){
+			//get geocoded center of map
+			center = Session.get('geocode_address');
+			if(center){
+			//return postings max 50km away from center
+				categoriesArray = Session.get('categoryFilter');
+				if(categoriesArray && (categoriesArray.length > 0)){
+					//if categories array has values, return postings
+					//filtered with those values
+					return Postings.find({
+						category: {$in: categoriesArray},
+						'geocode_address':
+							{$near:
+								{$geometry:
+									{type: "Point",
+										coordinates: [center.lat, 
+													center.lng]
+									},
+									$maxDistance: 50000
+								}
+							}	
+						},
+						{sort: {createdAt: -1}}
+					);					
+				} 
+				else{
+					//else return all values near the geocode_address
+					return Postings.find({
+						'geocode_address':
+							{$near:
+								{$geometry:
+									{type: "Point",
+										coordinates: [center.lat, 
+													center.lng]
+									},
+									$maxDistance: 50000
+								}
+							}	
+						},
+						{sort: {createdAt: -1}}
+					);
+				}	
+			}
+		},
+		posting_marker: function(){
+			//Insert marker into collection
+			if(this.geocode_address){
+				if(this.geocode_address.coordinates){
+				postingId = this._id;
+				Temporary_Markers.insert({lat: this.geocode_address.coordinates[0], 
+									lng: this.geocode_address.coordinates[1], 
+									postingId: postingId,
+									color: DEFAULT_MARKER});    				
+    				}
+    			}
+    	},
 		city: function(){
 			return Session.get('locationFilter');
     	},
@@ -401,12 +394,6 @@ function infoWindowContent(postingId){
 					//set category filter to null
 					Session.set('categoryFilter', null);
 				}
-				//set pages to only filter location
-				Pages.set({
-					filters: {
-						location: Session.get('locationFilter')
-					}
-				});
 				//change button value
 				$('#filterstoggle').val("filters");
 				//unbold text
@@ -444,8 +431,6 @@ function infoWindowContent(postingId){
 		'click #filters_table td': function(event){
 			//remove markers from map
 			Temporary_Markers.remove({});
-			//get location
-			var location = Session.get('locationFilter');
 			//get category that was clicked
 			clickedCategory = event.currentTarget.innerHTML.toLowerCase();
 			//get current category array
@@ -458,12 +443,6 @@ function infoWindowContent(postingId){
 				event.currentTarget.style.fontWeight = "bold";
 				categoriesArray.push(clickedCategory);
 				//set pages filter category
-				Pages.set({
-					filters: {
-						location: location,
-						category: {$in: categoriesArray}
-					}
-				});
 				Session.set('categoryFilter', categoriesArray);
 				} else{	//clickedCategory is in the array, remove from array and unbold
 					//remove from array
@@ -471,33 +450,17 @@ function infoWindowContent(postingId){
 					//unbold
 					event.currentTarget.style.fontWeight = "";
 					if(categoriesArray == null || categoriesArray.length == 0){	
-						categoriesArray == null;
 						//if null, take off all category filters
-						Pages.set({
-							filters: {
-								location: location
-							}
-						});
+						categoriesArray == null;
+						Session.set('categoryFilter', categoriesArray);
 					} else {
 						//set pages filter to new category array
-						Pages.set({
-							filters: {
-								location: location,
-								category: {$in: categoriesArray}
-							}
-						});
+						Session.set('categoryFilter', categoriesArray);						
 					}
-					Session.set('categoryFilter', categoriesArray);
 				}
 			} else{ //categoriesArray does not exist
 				categoriesArray = [clickedCategory];
-				event.currentTarget.style.fontWeight = "bold";
-				Pages.set({
-					filters: {
-						location: location,
-						category: {$in: categoriesArray}
-					}
-				});			
+				event.currentTarget.style.fontWeight = "bold";			
 				Session.set('categoryFilter', categoriesArray);
 			} 
 		}
@@ -625,7 +588,10 @@ function infoWindowContent(postingId){
 		mapOptions: function(){
 			if (GoogleMaps.loaded()){
 				return {
-					center: new google.maps.LatLng(this.geocode_address.lat, this.geocode_address.lng),
+					center: new google.maps.LatLng(
+						this.geocode_address.coordinates[0], 
+						this.geocode_address.coordinates[1]
+					),
 					zoom: 11
 				};
 			}
@@ -639,9 +605,10 @@ function infoWindowContent(postingId){
   		GoogleMaps.ready('map', function(map) {
     		// Add a marker to the map once it's ready
     		var marker = new google.maps.Marker({
-    			position: {lat: thiscontext.geocode_address.lat, lng: thiscontext.geocode_address.lng},
+    			position: {lat: thiscontext.geocode_address.coordinates[0],
+    						 lng: thiscontext.geocode_address.coordinates[1]},
     			map: map.instance,
-    			icon: DEFAULT_MARKER
+    			icon: GREEN_MARKER
     		});
   		});
 	});
@@ -891,9 +858,11 @@ var weekDaysDisabled = [];
 			}
 			//get posting information from the DOM
 			var title = $('[name="title"]').val();
-			var description = $('[name="description"]').val();
-			var location = $('[name="location"]').val();
-			var address = $('[name="address"]').val();
+			var description = $('textarea#new_posting_description').val();
+			var city = $('[name="city"]').val().toLowerCase();
+			var region = $('[name="region"]').val().toLowerCase();
+			var postalcode = $('[name="postalcode"]').val();
+			var street_address = $('[name="address"]').val();
 			var rentalrate = $('[name="rentalrate"]').val();
 			var category = Session.get('categorySelect');
 			var postingImages = [];
@@ -902,14 +871,40 @@ var weekDaysDisabled = [];
 				postingImages.push(this.src);	
 			})
 			var bookingsArray = [];
+			//check if "save details" checkbox is checked
+			if(document.getElementById('save_details').checked){
+			rentstuff_user = Rentstuff_Users.findOne({username: currentUsername});
+				Rentstuff_Users.update({_id: rentstuff_user._id},
+										{$set: {city: city,
+												region: region,
+												postalcode: postalcode,
+												address: street_address}});
+			}
+			var address;
+
+			if(street_address.length == 0){
+				address = postalcode;
+			} else{
+				address = street_address;
+			}
+
+			console.log(address);
+
 			searchAddress(address, function(geocode_address){
 			//search location to get geocoded address, 
 			//callback inserts posting into postings collection
 				var results = Postings.insert({title: title,
 							description: description,
-							location: location,
-							address: address,
-							geocode_address: geocode_address,
+							city: city,
+							region: region,
+							address: street_address,
+							geocode_address: {
+								"type": "Point",
+								"coordinates": [
+								geocode_address.lat,
+								geocode_address.lng
+								]
+							},
 							rentalrate: rentalrate,
 							category: category,
 							createdAt: new Date(),

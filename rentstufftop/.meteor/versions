@@ -2,7 +2,6 @@ accounts-base@1.2.7
 accounts-password@1.1.8
 accounts-ui@1.1.9
 accounts-ui-unstyled@1.1.12
-alethes:pages@1.8.6
 allow-deny@1.0.4
 autopublish@1.0.7
 autoupdate@1.2.9
@@ -58,7 +57,6 @@ localstorage@1.0.9
 logging@1.0.12
 meteor@1.1.14
 meteor-base@1.0.4
-meteor-platform@1.2.6
 meteorhacks:picker@1.0.3
 meteorhacks:search-source@1.4.2
 minifier-css@1.1.11
