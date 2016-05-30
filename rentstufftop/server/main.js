@@ -1,5 +1,7 @@
 Postings = new Mongo.Collection('postings');
 Rentstuff_Users = new Mongo.Collection('rentstuff_users');
+Messages = new Mongo.Collection('messages');
+Conversations = new Mongo.Collection('conversations');
 
 //Publish usernames
 Meteor.publish('users', function(){

@@ -15,6 +15,7 @@
     <h5>
     <a href="{{pathFor route='newPosting'}}" id="lend">+ lend</a>
     {{#if currentUser}}
+      <a href="{{pathFor route='messenger'}}">Messages</a>
       <a href="/profile/{{loggedinUser}}">{{loggedinUser}}</a>
       <a href="#" class="logout">logout</a>
     {{else}}
@@ -142,6 +143,68 @@
 {{/if}}
 </template>
 
+<template name="messenger">
+<p><h3>Borrow</h3></p>
+<p>
+  {{#each borrow_conversations}}
+    <div class="conversation_preview">
+      <a href="/messages/{{_id}}">
+        {{#if unread}}
+          <div class="custom_bold">Unread</div>
+        {{/if}}
+        {{#with posting}}
+          <p>{{title}}</p>
+        {{/with}}
+        {{#with conversation_preview}}
+          <p>From: {{from}}</p>
+          <p>Message: {{message}}</p>
+          <p>Time: {{messageTime}}</p>
+        {{/with}}
+      </a>
+    </div>
+  {{/each}}
+</p>
+<p><h3>Lend</h3></p>
+<p>
+  {{#each lend_conversations}}
+    <div class="conversation_preview">
+      <a href="/messages/{{_id}}">
+        {{#if unread}}
+          <div class="custom_bold">Unread</div>
+        {{/if}}
+        {{#with posting}}
+          <p>{{title}}</p>
+        {{/with}}
+        {{#with conversation_preview}}
+          <p>From: {{from}}</p>
+          <p>Message: {{message}}</p>
+          <p>Time: {{messageTime}}</p>
+        {{/with}}
+      </a>
+    </div>
+  {{/each}}
+</p>
+<p>
+  {{#if showConversation}}
+    {{> conversation}}
+  {{/if}}
+</p>
+</template>
+
+<template name="conversation">
+  <div class="conversation">
+  {{#if checkUser}}
+    {{#each messages}}
+      <p>From: {{from}}</p>
+      <p>Message: {{message}}</p>
+      <p>Time: {{messageTime}}</p>
+    {{/each}}
+    <textarea class="message" placeholder="Reply"></textarea>
+    <button class="send_message">Reply</button>
+  {{/if}}
+  </div>
+</template>
+
 <template name="imageupload">
   <form id="postingimages">
     <input type="file" id="postingimage1" name="userimage1"/>
@@ -254,6 +317,15 @@
   <p><em>Posted {{timedifference}}</em></p>
   <p><div class="custom_bold">Category</div> {{category}}</p>
   <p>Posted by: <a href="{{pathFor route='profile'}}">{{createdBy}}</a></p>
+  <p><button id="contact_lender">Contact Lender</button></p>
+  <div id="Modal" class="modal">
+    <div class="modal-content">
+      <span class="close">x</span>
+      <div class="custom_bold">Re: {{title}}</div>
+      <textarea class="message" placeholder="Send a Message"></textarea>
+      <button class="message_send">Send</button>
+    </div>
+  </div>
   <div class="calendar_container">
     {{> calendar}}
   </div>

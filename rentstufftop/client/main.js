@@ -18,6 +18,9 @@
 
 Postings = new Mongo.Collection('postings');
 Rentstuff_Users = new Mongo.Collection('rentstuff_users');
+Messages = new Mongo.Collection('messages');
+Conversations = new Mongo.Collection('conversations');
+
 //Client-Only Collection
 Temporary_Markers = new Mongo.Collection(null);
 
@@ -127,6 +130,17 @@ Router.route('/profile/:createdBy', function(){
 		});
 	},{
 		name: 'profile'
+});
+
+Router.route('/messages/:conversationId?', {
+	name: 'messenger',
+	template: 'messenger',
+	data: function(){
+		//get conversationid from url
+		var conversationId = this.params.conversationId;
+		//set conversation session to conversationId
+		Session.set('showConversation', conversationId);
+	}
 });
 
 	Template.navigation.helpers({
@@ -627,7 +641,200 @@ function infoWindowContent(postingId){
 		'click .bump': function(){
 			createdAt = new Date();
 			Postings.update({_id: this._id}, {$set: {createdAt: createdAt}});
+		},
+		'click #contact_lender': function(){
+			var modal = document.getElementById('Modal');
+			modal.style.display = "block";
+		},
+		'click .close': function(){
+			var modal = document.getElementById('Modal');
+			modal.style.display = "none";
+		},
+		'click .message_send': function(){
+			//get current user's username
+			var currentUser = Meteor.user().username;
+			var postingOwner = this.createdBy;
+			var message = $('textarea.message').val();
+			var currentTime = new Date();
+			var postingId = this._id;
+
+			conversationId = Conversations.insert(
+								{
+								lender: postingOwner,
+								asker: currentUser,
+								postingId: postingId,
+								messageTime: currentTime
+								});
+
+			Messages.insert({conversationId: conversationId,
+							from: currentUser,
+							message: message,
+							messageTime: currentTime
+							});
+			//get messaged user's account
+			rentstuff_user = Rentstuff_Users.findOne({username: postingOwner});
+			//get user's current unread array
+			unreadArray = rentstuff_user.unread;
+			if(unreadArray){
+				unreadArray.push(conversationId);
+			}
+			else{
+				unreadArray = [conversationId];
+			}
+			//update user's account
+			Rentstuff_Users.update({_id: rentstuff_user._id},
+								{$set: {unread: unreadArray}});
 		}
+	});
+
+	var closeModal = function(event){
+		var modal = document.getElementById('Modal');
+		if(event.target == modal){
+			modal.style.display = "none";
+		}
+	}
+
+	Template.messenger.helpers({
+		borrow_conversations: function(){
+			if(Meteor.user()){	
+				//get current username
+				currentUser = Meteor.user().username;
+				//find conversations where user is the asker
+				return Conversations.find({asker: currentUser},
+										{sort: {messageTime: -1}
+										});
+			}
+		},
+		lend_conversations: function(){
+			if(Meteor.user()){
+				//get current username
+				currentUser = Meteor.user().username;
+				//find conversations where user is the lender
+				return Conversations.find({lender: currentUser},
+										{sort: {messageTime: -1}
+										});
+			}
+		},
+		conversation_preview: function(){
+			conversationId = this._id;
+			//return last message of conversation
+			return Messages.findOne({conversationId: conversationId},
+									{sort: {messageTime: -1, limit: 1}
+									});
+		},
+		posting: function(){
+			postingId = this.postingId;
+			return Postings.findOne({_id: postingId});
+		},
+		'showConversation': function(){
+			return Session.get('showConversation');
+		},
+		unread: function(){
+			if(Meteor.user()){
+				//get current username
+				currentUser = Meteor.user().username;
+				conversationId = this._id;
+				//get user's unread array
+				unreadArray = Rentstuff_Users.findOne({username: currentUser}).unread;
+				if(unreadArray.indexOf(conversationId) != -1){
+					//if index is not -1, it is in unread array
+					return true;
+				}
+				return false;
+			}
+		}
+	});
+
+	Template.conversation.helpers({
+		checkUser: function(){
+			//get user
+			if(Meteor.user()){
+				currentUser = Meteor.user().username;
+				//get conversation
+				conversationId = Session.get('showConversation');
+				conversation = Conversations.findOne({_id: conversationId});
+				//check if user is a participant in conversation
+				if(conversation.asker == currentUser || conversation.lender == currentUser){
+					//update unread array first
+					rentstuff_user = Rentstuff_Users.findOne({username: currentUser});
+					unreadArray = rentstuff_user.unread;
+
+					if(unreadArray){
+						//get index of conversationId
+						conversationIndex = unreadArray.indexOf(conversationId);
+						if(conversationIndex != -1){
+							//if it is not -1, it is in the array, remove
+							unreadArray.splice(conversationIndex, 1);
+						}
+					} else{
+						uneadArray = [];
+					}
+					//update collection
+					Rentstuff_Users.update({_id: rentstuff_user._id},
+										{$set: {unread: unreadArray}});					
+
+					return true;
+				}
+			}
+			return false;
+
+		},
+		messages: function(){
+			var conversationId = Session.get('showConversation');
+			return Messages.find({conversationId: conversationId},
+									{sort: {messageTime: 1}
+									});
+		}
+	});
+
+	Template.conversation.events({
+		'click .send_message': function(){
+			if(Meteor.user()){
+				var currentUser = Meteor.user().username;
+				var message = $('textarea.message').val();
+				var conversationId = Session.get('showConversation');			
+				var currentTime = new Date();
+				Messages.insert({conversationId: conversationId,
+							from: currentUser,
+							message: message,
+							messageTime: currentTime
+							});
+				$('textarea.message').val("");
+				//get conversation participants
+				var conversation = Conversations.findOne({_id: conversationId});
+				//get which was participant was messaged
+				if(conversation.asker == currentUser){
+					messaged = conversation.lender;
+				} else{
+
+					messaged = conversation.asker;
+				}
+				//get messaged user's account
+				rentstuff_user = Rentstuff_Users.findOne({username: messaged});
+				//get user's current unread array
+				unreadArray = rentstuff_user.unread;
+				if(unreadArray){
+					if(unreadArray.indexOf(conversationId) == -1){
+					//if conversationId is not already on the array, push
+					unreadArray.push(conversationId);
+					}
+				}
+				else{
+					unreadArray = [conversationId];
+				}
+				//update user's account
+				Rentstuff_Users.update({_id: rentstuff_user._id},
+									{$set: {unread: unreadArray}});
+			}
+		}
+	})
+
+	Template.posting.onCreated(function(){
+		$(window).on('click', closeModal);
+	});
+
+	Template.posting.onDestroyed(function(){
+		$(window).off('click', closeModal);
 	});
 
 	Template.posting_map.helpers({
