@@ -185,6 +185,43 @@ a:visited{
 	text-overflow: ellipsis;
 }
 
+.pageNav {
+	clear:both;
+	margin-left: 35%;
+}
+
+.pageNav button{
+	background-color: white;
+	box-shadow: none;
+	border-radius: 4px;
+	outline: none;
+	color: #474747;
+	width: 80px;
+	-webkit-box-shadow: none;
+	background-image: none;
+}
+
+.pageNav a:{
+	font-weight: bold;
+	color: #474747;
+	text-decoration: none;
+}
+
+.pageNav a:hover{
+	text-decoration: none;
+	color: #474747;
+}
+
+.pageNav a:active{
+	text-decoration: none;
+	color: #474747;
+}
+
+.pageNav a:visited{
+	text-decoration: none;
+	color: #474747;
+}
+
 .map_postPreview{
 	padding: 0px;
 	margin: 0px;

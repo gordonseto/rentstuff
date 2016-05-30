@@ -12,6 +12,7 @@
 	meteor add dburles:google-maps				for maps
 	meteor add doctorpangloss:filter-collections for filters
 	meteor add ejson							extended json
+	meteor add check 							for checking
 */	
 
 
@@ -46,7 +47,7 @@ Router.route('/',{
 	template: 'home'
 });
 
-Router.route('/s/:city', {
+Router.route('/s/:city/:page?', {
 	name: 'search',
 	template: 'search',
 	data: function(){
@@ -104,8 +105,6 @@ Router.route('/lend',{
 Router.onStop(function(){
 	//register the previous route location in a session variable
 	Session.set("previousLocationPath", Router.current().url);
-	//set the category filter to null
-	Session.set("categoryFilter", null);
 	//remove all markers
 	Temporary_Markers.remove({});
 });
@@ -299,47 +298,63 @@ function infoWindowContent(postingId){
 			}
 		},
 		results: function(){
+			//get current page from url
+			var currentPage = parseInt(Router.current().params.page) || 1;
+			//get skip count from current page
+			var skipCount = (currentPage - 1) * Meteor.settings.public.recordsPerPage; //3 records per page
+			//check skipCount for positive integer
+			var positiveIntegerCheck = Match.Where(function(x){
+				check(x, Match.Integer);
+				return x >= 0;
+			});
+			check(skipCount, positiveIntegerCheck);
+
 			//get geocoded center of map
 			center = Session.get('geocode_address');
 			if(center){
-			//return postings max 50km away from center
+				//return postings max 50km away from center
 				categoriesArray = Session.get('categoryFilter');
-				if(categoriesArray && (categoriesArray.length > 0)){
-					//if categories array has values, return postings
-					//filtered with those values
-					return Postings.find({
-						category: {$in: categoriesArray},
-						'geocode_address':
-							{$near:
-								{$geometry:
-									{type: "Point",
-										coordinates: [center.lat, 
-													center.lng]
-									},
-									$maxDistance: 50000
-								}
-							}	
-						},
-						{sort: {createdAt: -1}}
-					);					
-				} 
-				else{
-					//else return all values near the geocode_address
-					return Postings.find({
-						'geocode_address':
-							{$near:
-								{$geometry:
-									{type: "Point",
-										coordinates: [center.lat, 
-													center.lng]
-									},
-									$maxDistance: 50000
-								}
-							}	
-						},
-						{sort: {createdAt: -1}}
-					);
-				}	
+				//if categories array has values, return postings
+				if(categoriesArray == null || categoriesArray.length == 0){
+					categoriesArray = ["snow", "water", "sport",
+										"play", "utility"];
+				}
+				//get total count of results 
+				var count = Postings.find({
+					category: {$in: categoriesArray},
+					'geocode_address':
+						{$near:
+							{$geometry:
+								{type: "Point",
+									coordinates: [center.lat, 
+												center.lng]
+								},
+								$maxDistance: 50000
+							}
+						}	
+					}).count();
+				//set session
+				Session.set('resultsCount', count);
+
+				return Postings.find({
+					category: {$in: categoriesArray},
+					'geocode_address':
+						{$near:
+							{$geometry:
+								{type: "Point",
+									coordinates: [center.lat, 
+												center.lng]
+								},
+								$maxDistance: 50000
+							}
+						}	
+					},
+					{
+						sort: {createdAt: -1},
+						limit: parseInt(Meteor.settings.public.recordsPerPage),
+						skip: skipCount
+					}
+				);					 
 			}
 		},
 		posting_marker: function(){
@@ -363,6 +378,37 @@ function infoWindowContent(postingId){
 			currentDate = new Date();
 
 			return getTimeDifference(postedDate, currentDate);
+		},
+		prevPage: function(){
+			//get current page
+			var currentPage = parseInt(Router.current().params.page) || 1;
+			//get current city
+			var currentCity = Router.current().params.city;
+			if(currentPage === 1){
+				//if current page is 1, no button
+				return false;
+			}
+			else{
+				previousPage = currentPage - 1;
+			return '/s/'+currentCity+'/'+previousPage;
+			}
+		},
+		nextPage: function(){
+			//get current page
+			var currentPage = parseInt(Router.current().params.page) || 1;
+			//get current city
+			var currentCity = Router.current().params.city;
+			//get total count of records
+			var count = Session.get('resultsCount');
+			//if there are more records to be returned, add one to next page
+			if(currentPage * parseInt(Meteor.settings.public.recordsPerPage) < count){
+				var nextPage = currentPage + 1;
+				return '/s/'+currentCity+'/'+nextPage;
+			}
+			else {
+			//else no button
+				return false;
+			}	
 		}
 	});
 

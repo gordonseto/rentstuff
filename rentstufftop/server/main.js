@@ -36,3 +36,4 @@ function buildRegExp(searchText) {
   var fullExp = exps.join('') + ".+";
   return new RegExp(fullExp, "i");
 }
+

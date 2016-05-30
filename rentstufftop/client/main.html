@@ -96,6 +96,22 @@
     </div>
     {{/each}}
   </div>
+  <div class="pageNav">
+    {{#if prevPage}}
+    <button>
+      <a href="{{prevPage}}">
+        <span hidden="true">&larr;</span> Previous
+      </a>
+    </button>
+    {{/if}}
+    {{#if nextPage}}
+    <button>
+      <a href="{{nextPage}}">
+        Next <span hidden="true">$rarr;</span>
+      </a>
+    </button>
+    {{/if}}
+  </div>
 </div>
 <div class="content-right">
     <div class="map-container">
