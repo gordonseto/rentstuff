@@ -144,13 +144,20 @@
 </template>
 
 <template name="messenger">
-<p><h3>Borrow</h3></p>
-<p>
-  {{#each borrow_conversations}}
-    <div class="conversation_preview">
-      <a href="/messages/{{_id}}">
+<div class="messenger">
+<div class="tabs">
+  <ul class="tab-links">
+    <li class="active"><a href="#borrow">Borrow</a></li>
+    <li><a href="#lend">Lend</a></li>
+  </ul>
+</div> 
+<br>
+<div class="tab-content">
+  <span id="borrow" class="tab active">
+    {{#each borrow_conversations}}
+    <div class="conversation_preview" name="{{_id}}">
         {{#if unread}}
-          <div class="custom_bold">Unread</div>
+           <div class="custom_bold">Unread</div>
         {{/if}}
         {{#with posting}}
           <p>{{title}}</p>
@@ -160,17 +167,15 @@
           <p>Message: {{message}}</p>
           <p>Time: {{messageTime}}</p>
         {{/with}}
-      </a>
     </div>
-  {{/each}}
-</p>
-<p><h3>Lend</h3></p>
-<p>
-  {{#each lend_conversations}}
-    <div class="conversation_preview">
-      <a href="/messages/{{_id}}">
+      {{> conversation}}
+    {{/each}}
+  </span>
+  <span id="lend" class="tab">
+    {{#each lend_conversations}}
+    <div class="conversation_preview" name="{{_id}}">
         {{#if unread}}
-          <div class="custom_bold">Unread</div>
+           <div class="custom_bold">Unread</div>
         {{/if}}
         {{#with posting}}
           <p>{{title}}</p>
@@ -180,28 +185,23 @@
           <p>Message: {{message}}</p>
           <p>Time: {{messageTime}}</p>
         {{/with}}
-      </a>
     </div>
-  {{/each}}
-</p>
-<p>
-  {{#if showConversation}}
-    {{> conversation}}
-  {{/if}}
-</p>
+      {{> conversation}}
+    {{/each}}
+  </span>
+</div>
+</div>
 </template>
 
 <template name="conversation">
-  <div class="conversation">
-  {{#if checkUser}}
+  <div class="conversation_container" id="{{_id}}">
     {{#each messages}}
-      <p>From: {{from}}</p>
-      <p>Message: {{message}}</p>
-      <p>Time: {{messageTime}}</p>
+        <div class="custom_bold">{{from}}</div>
+        <p>{{message}}</p>
+        <p>Time: {{messageTime}}</p>
     {{/each}}
-    <textarea class="message" placeholder="Reply"></textarea>
+    <textarea class="message" placeholder="Reply" id="{{_id}}message"></textarea>
     <button class="send_message">Reply</button>
-  {{/if}}
   </div>
 </template>
 

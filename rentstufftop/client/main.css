@@ -9,16 +9,8 @@ a:{
 	text-decoration: none;
 }
 
-a:hover{
-	text-decoration: none;
-}
-
-a:active{
-	text-decoration: none;
-}
-
-a:visited{
-	text-decoration: none;
+a, a:hover, a:active, a:visited {
+    text-decoration:none;
 }
 
 .custom_bold{
@@ -49,12 +41,9 @@ a:visited{
 	padding-bottom: 20px;
 }
 
-.hometitle a:visited{
-	text-decoration: none;
-}
-
-.hometitle a:active{
-	text-decoration: none;
+.hometitle a, .hometitle a:hover, 
+.hometitle a:active, .hometitle a:visited {
+    text-decoration:none;
 }
 
 .navigation_links{
@@ -88,6 +77,11 @@ a:visited{
 
 .navigation_links a:active{
 	color: white;
+}
+
+.navigation_links a, .navigation_links a:hover, 
+.navigation_links a:active, .navigation_links a:visited {
+    text-decoration:none;
 }
 
 #lend {
@@ -628,10 +622,123 @@ td:hover{
 	height: 40px;
 }
 
-.conversation_preview {
-	border: 1px solid black;
-	margin: 5px;
-	width: 700px;
-	border-radius: 4px;
+.messenger {
+	margin-top: 100px;
+	margin-left: 32.5%;
+	margin-bottom: 150px;
 }
 
+/*----- Tabs -----*/
+.tabs {
+    display:inline-block;
+    margin: none;
+    padding: none;
+}
+ 
+    /*----- Tab Links -----*/
+    /* Clearfix */
+    .tab-links:after {
+        display:block;
+        clear:both;
+        content:'';
+        margin: none;
+        padding: none;
+    }
+ 
+
+.tab-links a, .tab-links a:hover, 
+.tab-links a:active, .tab-links a:visited {
+    text-decoration:none;
+}
+
+    .tab-links li {
+        float:left;
+        list-style:none;
+        padding: none;
+        margin: none;
+    }
+ 
+        .tab-links a {
+        	text-align: center;
+            padding-top: 9px;
+            padding-bottom: 9px;
+            width: 300px;
+            display:inline-block;
+            border: 1px solid #D1D1D1;
+            background: white;
+            font-size:16px;
+            font-weight:600;
+            color:#4c4c4c;
+            transition:all linear 0.15s;
+            margin: none;
+        }
+ 
+        .tab-links a:hover {
+            text-decoration:none;
+        }
+ 
+    li.active a, li.active a:hover {
+        background:#E8E8E8;
+        color:#4c4c4c;
+        margin: none;
+        padding: none;
+    }
+
+    .tab.active{
+    	margin: none;
+    	padding: none;
+    }
+ 
+    /*----- Content of Tabs -----*/
+    .tab-content {
+    	margin: none;
+    	padding: none;
+    	clear:both;
+        border-radius:3px;
+        background:#fff;
+        margin-top: 20px;
+        margin-left: 38px;
+        padding-left: 0px;
+        border: none;
+        outline: none;
+        box-shadow: none;
+    }
+ 
+        .tab {
+            display:none;
+            margin: none;
+            padding: none;
+        }
+ 
+        .tab.active {
+            display:inline-block;
+            margin: none;
+            padding: none;
+        }
+
+
+.conversation_preview {
+	clear:both;
+	padding: none;
+	margin: none;
+	border: 1px solid black;
+	width: 600px;
+	border-radius: 4px;
+	margin-top: none;
+	margin-bottom: 10px;
+}
+
+.conversation_preview:hover{
+	cursor: pointer;
+}
+
+.conversation_preview.lend{
+	padding-left: 0px;
+	padding-top: 0px;
+}
+
+.conversation_container {
+	max-height: 600px;
+	overflow-y: auto;
+	display: none;
+}

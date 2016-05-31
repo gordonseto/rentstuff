@@ -132,15 +132,9 @@ Router.route('/profile/:createdBy', function(){
 		name: 'profile'
 });
 
-Router.route('/messages/:conversationId?', {
+Router.route('/messages', {
 	name: 'messenger',
-	template: 'messenger',
-	data: function(){
-		//get conversationid from url
-		var conversationId = this.params.conversationId;
-		//set conversation session to conversationId
-		Session.set('showConversation', conversationId);
-	}
+	template: 'messenger'
 });
 
 	Template.navigation.helpers({
@@ -745,6 +739,67 @@ function infoWindowContent(postingId){
 		}
 	});
 
+	Template.messenger.events({
+		'click .tabs .tab-links a': function(event){
+			$(document).ready(function(){
+				event.preventDefault();
+				var currentAttrValue = $(event.currentTarget).attr('href');
+				// show/hide tabs
+				$('.tab-content ' + currentAttrValue).show().siblings().hide();
+				// change/remove current tab to active
+				$(event.currentTarget).parent('li').addClass('active').siblings().removeClass('active');
+				Session.set('showConversation', null);
+			});
+		},
+		'click .conversation_preview': function(event){
+			//get conversation id from html
+			conversationId = event.currentTarget.attributes.name.value;
+			//set showconversation session variable
+			Session.set('showConversation', conversationId);
+			//toggle conversation display
+			conversation_container = $('#'+conversationId);
+			conversation_container.slideToggle(250);
+			//get user
+			if(Meteor.user()){
+				currentUser = Meteor.user().username;
+				//get conversation
+				conversation = Conversations.findOne({_id: conversationId});
+				//update unread array
+				rentstuff_user = Rentstuff_Users.findOne({username: currentUser});
+				unreadArray = rentstuff_user.unread;
+
+				if(unreadArray){
+					//get index of conversationId
+					conversationIndex = unreadArray.indexOf(conversationId);
+					if(conversationIndex != -1){
+						//if it is not -1, it is in the array, remove
+						unreadArray.splice(conversationIndex, 1);
+					}
+				} else{
+					unreadArray = [];
+				}
+				//update collection
+				Rentstuff_Users.update({_id: rentstuff_user._id},
+									{$set: {unread: unreadArray}});					
+
+			}
+			//scroll to bottom of chat
+			conversation_container.scrollTop(conversation_container.prop("scrollHeight"));
+		}
+	});
+
+	Template.conversation.onCreated( function(){
+		Messages.find().observe({
+    		//observe the Messages collection
+    		added: function(document){
+    				conversationId = document.conversationId;
+    				conversation_container = $('#'+conversationId);
+    				//scroll to bottom of chat
+					conversation_container.scrollTop(conversation_container.prop("scrollHeight"));		
+    		}
+    	});
+	});
+
 	Template.conversation.helpers({
 		checkUser: function(){
 			//get user
@@ -780,7 +835,7 @@ function infoWindowContent(postingId){
 
 		},
 		messages: function(){
-			var conversationId = Session.get('showConversation');
+			var conversationId = this._id;
 			return Messages.find({conversationId: conversationId},
 									{sort: {messageTime: 1}
 									});
@@ -788,11 +843,12 @@ function infoWindowContent(postingId){
 	});
 
 	Template.conversation.events({
-		'click .send_message': function(){
+		'click .send_message': function(event){
+			event.preventDefault();
 			if(Meteor.user()){
 				var currentUser = Meteor.user().username;
-				var message = $('textarea.message').val();
-				var conversationId = Session.get('showConversation');			
+				var conversationId = event.currentTarget.parentElement.id;			
+				var message = $('textarea.message#'+conversationId+'message').val();				
 				var currentTime = new Date();
 				Messages.insert({conversationId: conversationId,
 							from: currentUser,
@@ -827,7 +883,7 @@ function infoWindowContent(postingId){
 									{$set: {unread: unreadArray}});
 			}
 		}
-	})
+	});
 
 	Template.posting.onCreated(function(){
 		$(window).on('click', closeModal);
@@ -1371,7 +1427,8 @@ var weekDaysDisabled = [];
 						username: username,
 						password: password,
 						loans: [],
-						bookings: []
+						bookings: [],
+						unread: []
 					}, function(error){
 					if(error){
 						if(error.reason == "Email already exists."){
@@ -1391,7 +1448,8 @@ var weekDaysDisabled = [];
 							email: email,
 							bookings: [],
 							loans: [],
-							saved_postings: []
+							saved_postings: [],
+							unread: []
 						});						
 						Router.go(Session.get("previousLocationPath"));
 					}
