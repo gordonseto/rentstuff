@@ -86,7 +86,7 @@
     <a href="{{pathFor route='posting'}}" target="{{pathFor route='posting'}}">
       <span class="postPreview">
         <div class="posting_image">
-        <img src="{{postingImages.[0]}}">
+          <img src="{{postingImages.[0]}}">
         </div>
         <div class="posting_time">{{timedifference}}</div>
         <div class="posting_title">{{title}}</div>
@@ -155,17 +155,31 @@
 <div class="tab-content">
   <span id="borrow" class="tab active">
     {{#each borrow_conversations}}
-    <div class="conversation_preview" name="{{_id}}">
-        {{#if unread}}
-           <div class="custom_bold">Unread</div>
-        {{/if}}
+    <div class="conversation_preview {{unread}}" name="{{_id}}">
+        <div class="message_time">
+          {{short_messageTime}}
+        </div>
         {{#with posting}}
-          <p>{{title}}</p>
+          <div class="conversation_title">
+            <a href="/posting/{{_id}}"><div class="custom_bold">{{title}}</div></a>
+          </div>
+          <div class="conversation_preview_details">
+            <div class="conversation_image">
+              <a href="/posting/{{_id}}">
+                <img src="{{postingImages.[0]}}">
+              </a>
+            </div>
+          </div>
         {{/with}}
         {{#with conversation_preview}}
-          <p>From: {{from}}</p>
-          <p>Message: {{message}}</p>
-          <p>Time: {{messageTime}}</p>
+          <div class="preview_author">
+            <a href="/profile/{{from}}"><div class="custom_bold">{{from}}</div></a>
+          </div>
+          <div class="conversation_preview_details">
+            <div class="preview_message">
+              {{message}}
+            </div>
+          </div>
         {{/with}}
     </div>
       {{> conversation}}
@@ -173,17 +187,31 @@
   </span>
   <span id="lend" class="tab">
     {{#each lend_conversations}}
-    <div class="conversation_preview" name="{{_id}}">
-        {{#if unread}}
-           <div class="custom_bold">Unread</div>
-        {{/if}}
+    <div class="conversation_preview {{unread}}" name="{{_id}}">
+        <div class="message_time">
+          {{short_messageTime}}
+        </div>
         {{#with posting}}
-          <p>{{title}}</p>
+          <div class="conversation_title">
+            <a href="/posting/{{_id}}"><div class="custom_bold">{{title}}</div></a>
+          </div>
+          <div class="conversation_preview_details">
+            <div class="conversation_image">
+              <a href="/posting/{{_id}}">
+                <img src="{{postingImages.[0]}}">
+              </a>
+            </div>
+          </div>
         {{/with}}
         {{#with conversation_preview}}
-          <p>From: {{from}}</p>
-          <p>Message: {{message}}</p>
-          <p>Time: {{messageTime}}</p>
+          <div class="preview_author">
+            <a href="/profile/{{from}}"><div class="custom_bold">{{from}}</div></a>
+          </div>        
+          <div class="conversation_preview_details">
+            <div class="preview_message">
+              {{message}}
+            </div>
+          </div>
         {{/with}}
     </div>
       {{> conversation}}
@@ -196,12 +224,32 @@
 <template name="conversation">
   <div class="conversation_container" id="{{_id}}">
     {{#each messages}}
-        <div class="custom_bold">{{from}}</div>
-        <p>{{message}}</p>
-        <p>Time: {{messageTime}}</p>
+      <div class="message">
+      {{#if sent}}
+        <div class="sent_message">
+          <div class="message_time">
+            {{short_messageTime}}
+          </div>
+          <a href="/profile/{{currentUser}}"><div class="custom_bold">me</div></a>
+          <br>
+          <p>{{message}}</p>
+        </div>
+      {{else}}
+        <div class="received_message">
+          <div class="message_time">
+            {{short_messageTime}}
+          </div>
+          <a href="/profile/{{from}}"><div class="custom_bold">{{from}}</div></a>
+          <br>
+          <p>{{message}}</p>
+        </div>
+      {{/if}}
+      </div>
     {{/each}}
     <textarea class="message" placeholder="Reply" id="{{_id}}message"></textarea>
-    <button class="send_message">Reply</button>
+    <p>
+      <button class="send_message">Reply</button>
+    </p>
   </div>
 </template>
 

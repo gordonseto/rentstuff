@@ -7,6 +7,7 @@ a:{
 	font-weight: bold;
 	color: #474747;
 	text-decoration: none;
+	width: auto;
 }
 
 a, a:hover, a:active, a:visited {
@@ -16,6 +17,7 @@ a, a:hover, a:active, a:visited {
 .custom_bold{
 	font-weight: bold;
 	color: #474747;	
+	width: auto;
 }
 
 .navigation_bar{
@@ -721,11 +723,18 @@ td:hover{
 	clear:both;
 	padding: none;
 	margin: none;
-	border: 1px solid black;
+	border: 1px solid #CFCFCF;
 	width: 600px;
-	border-radius: 4px;
 	margin-top: none;
 	margin-bottom: 10px;
+	word-wrap: break-word;
+	padding-left: 10px;
+	overflow: auto;
+}
+
+.unread {
+	font-weight: bold;
+	background: #F5F5F5;
 }
 
 .conversation_preview:hover{
@@ -737,8 +746,102 @@ td:hover{
 	padding-top: 0px;
 }
 
+.conversation_title{
+	height: 1.2em;
+	width: 400px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.conversation_image {
+	background-color: #EDEDED;
+	width: 88px;
+	height: 117.6px;
+}
+
+.conversation_image img {
+	position: relative;
+	top: 50%;
+	transform: translateY(-50%);
+	width: auto;
+	height: auto;
+	max-width: 88px;
+	max-height: 117.6px;
+}
+
+.conversation_preview_details {
+	float: left;
+	margin-top: 5px;
+	margin-bottom: none;
+}
+
+.preview_author{
+	clear:right;
+	float: right;
+	width: auto;
+	margin-right: 5px;
+}
+
+.preview_message{
+	height: 92px;
+	width: 300px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	margin-left: 50px;
+	margin-top: 38px;
+	padding: none;
+	text-align: center;
+}
+
 .conversation_container {
 	max-height: 600px;
 	overflow-y: auto;
 	display: none;
+	margin-bottom: 30px;
+	max-width: 600px;
+	word-wrap: break-word;
+	border: 1px solid #CFCFCF;
+	box-shadow: 1px 1px 2px #919191;
 }
+
+.conversation_container textarea{
+	margin-top: 10px;
+	margin-left: 10px;
+	width: 560px;
+	height: 100px;
+}
+
+.message{
+	margin: none;
+	margin-bottom: none;
+	border-top: 1px solid #CFCFCF;
+	height: auto;
+	max-width: 600px;
+	padding: none;
+}
+
+.received_message{
+	background: #F2F2F2;
+	margin: none;
+	height: 100%;
+	padding-left: 10px;	
+}
+
+.sent_message{
+	padding-left: 10px;
+}
+
+.message_time {
+	float: right;
+	padding-right: 5px;
+	color: #999999;
+}
+
+.send_message {
+	width: 100px;
+	margin-left: 470px;
+}
+
+

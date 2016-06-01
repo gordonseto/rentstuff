@@ -644,11 +644,12 @@ function infoWindowContent(postingId){
 			var modal = document.getElementById('Modal');
 			modal.style.display = "none";
 		},
-		'click .message_send': function(){
+		'click .message_send': function(event){
 			//get current user's username
 			var currentUser = Meteor.user().username;
 			var postingOwner = this.createdBy;
-			var message = $('textarea.message').val();
+			var text_area = $('textarea.message');
+			var message = text_area.val();
 			var currentTime = new Date();
 			var postingId = this._id;
 
@@ -678,6 +679,21 @@ function infoWindowContent(postingId){
 			//update user's account
 			Rentstuff_Users.update({_id: rentstuff_user._id},
 								{$set: {unread: unreadArray}});
+			//remove text
+			text_area.val("");
+			//change placeholder
+			text_area.attr("placeholder", "Message Sent!");
+			console.log(event);
+			event.currentTarget.disabled = "true";
+			setTimeout(function(){
+				//after 1 second, close modal
+				var modal = document.getElementById('Modal');
+				modal.style.display = "none";
+				//change back placeholder
+				text_area.attr("placeholder", "Message Sent!");
+				//enable button	
+				$('button.message_send').prop("disabled", false);	
+			}, 1000);			
 		}
 	});
 
@@ -687,6 +703,43 @@ function infoWindowContent(postingId){
 			modal.style.display = "none";
 		}
 	}
+
+	Template.posting.onCreated(function(){
+		$(window).on('click', closeModal);
+	});
+
+	Template.posting.onDestroyed(function(){
+		$(window).off('click', closeModal);
+	});
+
+	Template.posting_map.helpers({
+		mapOptions: function(){
+			if (GoogleMaps.loaded()){
+				return {
+					center: new google.maps.LatLng(
+						this.geocode_address.coordinates[0], 
+						this.geocode_address.coordinates[1]
+					),
+					zoom: 11
+				};
+			}
+		}
+	});
+
+	Template.posting_map.onCreated(function() {
+		//Get data context
+		thiscontext = Template.currentData();
+  		// We can use the `ready` callback to interact with the map API once the map is ready.
+  		GoogleMaps.ready('map', function(map) {
+    		// Add a marker to the map once it's ready
+    		var marker = new google.maps.Marker({
+    			position: {lat: thiscontext.geocode_address.coordinates[0],
+    						 lng: thiscontext.geocode_address.coordinates[1]},
+    			map: map.instance,
+    			icon: GREEN_MARKER
+    		});
+  		});
+	});
 
 	Template.messenger.helpers({
 		borrow_conversations: function(){
@@ -732,10 +785,14 @@ function infoWindowContent(postingId){
 				unreadArray = Rentstuff_Users.findOne({username: currentUser}).unread;
 				if(unreadArray.indexOf(conversationId) != -1){
 					//if index is not -1, it is in unread array
-					return true;
+					return 'unread';
 				}
-				return false;
+				return 'read';
 			}
+		},
+		short_messageTime: function(){
+			messageDate = this.messageTime;
+			return getMessageTime(messageDate);
 		}
 	});
 
@@ -839,15 +896,83 @@ function infoWindowContent(postingId){
 			return Messages.find({conversationId: conversationId},
 									{sort: {messageTime: 1}
 									});
+		},
+		short_messageTime: function(){
+			messageDate = this.messageTime;
+			return getMessageTime(messageDate);
+		},
+		sent: function(){
+			//get message author
+			var from = this.from;
+			if(Meteor.user()){
+				//if author is the same as user logged in, return true
+				if(from == Meteor.user().username){
+					return true;
+				}
+			}
+			//else return false
+			return false;
+		},
+		currentUser: function(){
+			return Meteor.user().username;
 		}
 	});
+
+var daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday",
+				"Thursday", "Friday", "Saturday"];
+
+function getMessageTime(messageDate){
+	var currentDate = new Date();
+	messageDate.toLocaleString();
+	var messageHour = messageDate.getHours();
+	var messageMinutes = messageDate.getMinutes();
+	var messageYear = messageDate.getFullYear();
+	var messageHalf = ' am';
+	//convert to 12 hour days
+	if(messageHour > 12){
+		messageHour = messageHour - 12;
+		messageHalf = ' pm';
+	}
+	if(messageMinutes < 10){
+		messageMinutes = '0' + messageMinutes;
+	}
+	var dateDifference = currentDate.getDate() - messageDate.getDate();
+	//if same day, return today + time
+	if(dateDifference == 0){
+		return 'Today' + ', ' + messageHour +
+				':' + messageMinutes + messageHalf;
+	}
+	//if within a day, return yesterday+ time
+	if((dateDifference > 0 && dateDifference < 1) ||
+		(dateDifference < 0 && dateDifference < -29)){
+		return 'Yesterday' + ', ' + messageHour +
+				':' + messageMinutes + messageHalf;
+	}
+	//if dates are within a week apart, return day of week and time
+	if((dateDifference > 0 && dateDifference < 6) || 
+		(dateDifference < -24)){
+		return daysOfWeek[messageDate.getDay()] + ', ' + messageHour +
+				':' + messageMinutes + messageHalf;
+	}  
+	//if longer than a week, return date and time
+	if(messageYear != currentDate.getFullYear()){
+		//if longer than a year, return year
+		return messageYear + '/' + (messageDate.getMonth() + 1) +
+				'/' + messageDate.getDate() + ' ' + messageHour +
+				':' + messageMinutes + messageHalf;
+	}
+	return (messageDate.getMonth() + 1) + '/' + 
+			messageDate.getDate() + ' ' + messageHour + 
+			':' + messageMinutes + messageHalf;
+}
+
 
 	Template.conversation.events({
 		'click .send_message': function(event){
 			event.preventDefault();
 			if(Meteor.user()){
 				var currentUser = Meteor.user().username;
-				var conversationId = event.currentTarget.parentElement.id;			
+				var conversationId = event.currentTarget.parentElement.parentElement.id;			
 				var message = $('textarea.message#'+conversationId+'message').val();				
 				var currentTime = new Date();
 				Messages.insert({conversationId: conversationId,
@@ -856,13 +981,15 @@ function infoWindowContent(postingId){
 							messageTime: currentTime
 							});
 				$('textarea.message').val("");
-				//get conversation participants
+				//get conversation
 				var conversation = Conversations.findOne({_id: conversationId});
+				Conversations.update({_id: conversation._id}, 
+									{$set: {messageTime: currentTime}
+									});
 				//get which was participant was messaged
 				if(conversation.asker == currentUser){
 					messaged = conversation.lender;
 				} else{
-
 					messaged = conversation.asker;
 				}
 				//get messaged user's account
@@ -883,43 +1010,6 @@ function infoWindowContent(postingId){
 									{$set: {unread: unreadArray}});
 			}
 		}
-	});
-
-	Template.posting.onCreated(function(){
-		$(window).on('click', closeModal);
-	});
-
-	Template.posting.onDestroyed(function(){
-		$(window).off('click', closeModal);
-	});
-
-	Template.posting_map.helpers({
-		mapOptions: function(){
-			if (GoogleMaps.loaded()){
-				return {
-					center: new google.maps.LatLng(
-						this.geocode_address.coordinates[0], 
-						this.geocode_address.coordinates[1]
-					),
-					zoom: 11
-				};
-			}
-		}
-	});
-
-	Template.posting_map.onCreated(function() {
-		//Get data context
-		thiscontext = Template.currentData();
-  		// We can use the `ready` callback to interact with the map API once the map is ready.
-  		GoogleMaps.ready('map', function(map) {
-    		// Add a marker to the map once it's ready
-    		var marker = new google.maps.Marker({
-    			position: {lat: thiscontext.geocode_address.coordinates[0],
-    						 lng: thiscontext.geocode_address.coordinates[1]},
-    			map: map.instance,
-    			icon: GREEN_MARKER
-    		});
-  		});
 	});
 
 	Template.confirm.helpers({
