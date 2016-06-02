@@ -24,6 +24,8 @@ Conversations = new Mongo.Collection('conversations');
 //Client-Only Collection
 Temporary_Markers = new Mongo.Collection(null);
 
+var recordsPerPage = 12;
+
 //Search box
 var options = {
 	keepHistory: 1000*60*5,
@@ -309,7 +311,7 @@ function infoWindowContent(postingId){
 			//get current page from url
 			var currentPage = parseInt(Router.current().params.page) || 1;
 			//get skip count from current page
-			var skipCount = (currentPage - 1) * Meteor.settings.public.recordsPerPage; //3 records per page
+			var skipCount = (currentPage - 1) * recordsPerPage;
 			//check skipCount for positive integer
 			var positiveIntegerCheck = Match.Where(function(x){
 				check(x, Match.Integer);
@@ -359,7 +361,7 @@ function infoWindowContent(postingId){
 					},
 					{
 						sort: {createdAt: -1},
-						limit: parseInt(Meteor.settings.public.recordsPerPage),
+						limit: recordsPerPage,
 						skip: skipCount
 					}
 				);					 
@@ -409,7 +411,7 @@ function infoWindowContent(postingId){
 			//get total count of records
 			var count = Session.get('resultsCount');
 			//if there are more records to be returned, add one to next page
-			if(currentPage * parseInt(Meteor.settings.public.recordsPerPage) < count){
+			if(currentPage * recordsPerPage < count){
 				var nextPage = currentPage + 1;
 				return '/s/'+currentCity+'/'+nextPage;
 			}
@@ -417,6 +419,32 @@ function infoWindowContent(postingId){
 			//else no button
 				return false;
 			}	
+		},
+		maxPage: function(){
+			var currentCity = Router.current().params.city;
+			var count = Session.get('resultsCount');
+			maxPage = count/recordsPerPage;
+			maxPage = Math.ceil(maxPage);
+			return '/s/'+currentCity+'/'+maxPage;
+		},
+		numPage: function(){
+			var count = Session.get('resultsCount');
+			maxPage = count/recordsPerPage;
+			maxPage = Math.ceil(maxPage);
+			var numPages = [];
+			for(i = 1; i <= maxPage; i++){
+				numPages.push(i);
+			}
+			return numPages;
+		},
+		currentPage: function(){
+			var currentPage = parseInt(Router.current().params.page) || 1;
+			if(currentPage == this){
+				return 'currentPage';
+			}
+			else{
+				return '';
+			}
 		}
 	});
 
@@ -473,8 +501,10 @@ var doLoop = false;
 			event.preventDefault();
 			//searches new location when entered by user
 			var location = $('#location').val();
-			location = location.toLowerCase();
-			Router.go('/s/'+location);
+			if(location){
+				location = location.toLowerCase();
+				Router.go('/s/'+location);
+			}
 		},	
 		//mouseenter, change color to green
 		'mouseenter .posting_container': function(event, template){

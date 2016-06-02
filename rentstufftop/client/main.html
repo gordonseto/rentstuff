@@ -88,9 +88,9 @@
         <div class="posting_image">
           <img src="{{postingImages.[0]}}">
         </div>
-        <div class="posting_time">{{timedifference}}</div>
-        <div class="posting_title">{{title}}</div>
-        <div class="posting_rate">${{rentalrate}} /day</div>
+        <div class="posting_preview_title"><div class="custom_bold">{{title}}</div></div>
+        <div class="posting_preview_rate">${{rentalrate}} /day</div>
+        <div class="posting_preview_time">{{timedifference}}</div>
         {{posting_marker}}
       </span>
     </a>
@@ -98,20 +98,37 @@
     {{/each}}
   </div>
   <div class="pageNav">
-    {{#if prevPage}}
-    <button>
-      <a href="{{prevPage}}">
-        <span hidden="true">&larr;</span> Previous
-      </a>
-    </button>
-    {{/if}}
-    {{#if nextPage}}
-    <button>
-      <a href="{{nextPage}}">
-        Next <span hidden="true">$rarr;</span>
-      </a>
-    </button>
-    {{/if}}
+    <a href="/s/{{city}}">
+      <button>
+        <span hidden="true">&larr;</span> &lt;&lt;
+      </button>
+    </a>   
+    <a href="{{prevPage}}">
+      <button>
+        <span hidden="true">&larr;</span> &lt;
+      </button>
+    </a>
+    {{#each numPage}}
+      <div class="numPage">
+        <a href="/s/{{city}}/{{this}}">
+          <div class="{{currentPage}}">
+            <button>
+              {{this}}
+            </button>
+          </div>
+        </a>
+      </div>
+    {{/each}}
+    <a href="{{nextPage}}">
+      <button>
+        &gt; <span hidden="true">$rarr;</span>
+      </button>  
+    </a>
+    <a href="{{maxPage}}">
+      <button>
+        <span hidden="true">&rarr;</span> &gt;&gt;
+      </button>
+    </a>
   </div>
 </div>
 <div class="content-right">

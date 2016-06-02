@@ -145,7 +145,7 @@ a, a:hover, a:active, a:visited {
 	float: left;
 	color: black;
 	width: 220px;
-	height: 400px;
+	height: 350px;
 }
 
 .postPreview:hover{
@@ -168,13 +168,18 @@ a, a:hover, a:active, a:visited {
 	height: 293.3333px;
 }
 
-.posting_time {
+.posting_preview_rate {
+	float: left;
+}
+
+.posting_preview_time {
+	float: right;
 	margin-top: 2px;
 	font-size: 10px;
 }
 
-.posting_title {
-	font-weight: bold;
+.posting_preview_title {
+	margin-top: 0px;
 	max-width: 220px;
 	white-space: nowrap;
 	overflow: hidden;
@@ -183,19 +188,53 @@ a, a:hover, a:active, a:visited {
 
 .pageNav {
 	clear:both;
-	margin-left: 45%;
+	margin-left: 35%;
+	margin-bottom: 20px;
+	box-shadow: none;
+	-webkit-box-shadow: none;
+	background-image: none;
+	-moz-box-shadow: none;
 }
 
 .pageNav button{
+	float: left;
 	background-color: white;
-	box-shadow: none;
-	border-radius: 4px;
+	box-shadow: none !important;
+	border-radius: 2px;
+	border: 1px solid #00B374;
 	outline: none;
-	color: #474747;
-	width: 80px;
+	font-weight: bold;
+	color: #00B374;
+	width: 40px;
+	height: 40px;
+	margin-left: 2.5px;
+	margin-right: 2.5px;
 	-webkit-box-shadow: none;
 	background-image: none;
+	-moz-box-shadow: none;
 }
+
+.pageNav .numPage button{
+	width: 40px;
+	box-shadow: none;
+	-webkit-box-shadow: none;
+	background-image: none;
+	-moz-box-shadow: none;
+}
+
+.pageNav .numPage .currentPage button{
+	background-color: #00B374;
+	color: white;
+}
+
+.pageNav button:hover{
+	background-color: #F0F0F0;
+}
+
+.pageNav .numPage .currentPage button:hover{
+	background-color: #02A36A;
+}
+
 
 .pageNav a:{
 	font-weight: bold;
@@ -289,7 +328,7 @@ td:hover{
 	margin-left: 5%;
 	overflow-y: auto;
 	overflow-x: hidden;
-	height: 80%;
+	height: 82.5%;
 }
 
 .posting_content_left{
