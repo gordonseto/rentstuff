@@ -255,12 +255,14 @@
 
 <template name="imageupload">
   <form id="postingimages">
-    <input type="file" id="postingimage1" name="userimage1"/>
-    <input type="file" id="postingimage2" name="userimage2"/>
-    <button type="submit" class="submitimages">Upload</button>
+    <input type="file" accept="image/*" id="upload1">
+    <input type="file" accept="image/*" id="upload2">
+    <input type="file" accept="image/*" id="upload3">
+    <input type="file" accept="image/*" id="upload4">
+    <input type="file" accept="image/*" id="upload5">
+    <input type="file" accept="image/*" id="upload6">
+    <div id="image_container"></div>
   </form>
-  <div class="image_holder">
-  </div>
 </template>
 
 <template name="displayPostings">
@@ -280,25 +282,25 @@
 <template name="newPosting">
 <div class="new_posting_container">
   <form>
-  <p><input type="text" name="title" placeholder="Title (Required)" required></p>
+  <p><input type="text" name="title" placeholder="Title (Required)"></p>
   <p><textarea id="new_posting_description" name="description" placeholder="Description (Optional)"></textarea></p>
   <br><br>
   <p>
-    <input type="text" name="city" placeholder="City (Required)" required>
+    <input type="text" name="city" placeholder="City (Required)">
   </p>
   <p>
     <span class="region">
-        <input type="text" id="region" name="region" placeholder="Province/State (Required)" required>
+        <input type="text" id="region" name="region" placeholder="Province/State (Required)" >
     </span>
     <span class="postalcode">
-        <input type="text" id="postalcode" name="postalcode" placeholder="Postal Code (Required)" required>
+        <input type="text" id="postalcode" name="postalcode" placeholder="Postal Code (Required)" >
     </span>
   </p>
   <p>
     <input type="text" name="address" placeholder="Street Address (Optional)">
   </p>
   <p>
-    $ <span class="rentalrate"><input type="text" name="rentalrate" placeholder="(Required)" required></span> /day
+    $ <span class="rentalrate"><input type="text" name="rentalrate" placeholder="(Required)" ></span> /day
     <span class="save_details">
       <input type="checkbox" id="save_details"> Save Location Details to Account
     </span>
@@ -307,7 +309,7 @@
   <p>
     Category:
     <span class="category-select">
-      <input type="radio" name="category-select" value="snow" required> SNOW   <input type="radio" name="category-select" value="water" required> WATER   <input type="radio" name="category-select" value="sport" required> SPORT   <input type="radio" name="category-select" value="play" required> PLAY    <input type="radio" name="category-select" value="utility" required> UTILITY
+      <input type="radio" name="category-select" value="snow" > SNOW   <input type="radio" name="category-select" value="water" > WATER   <input type="radio" name="category-select" value="sport" > SPORT   <input type="radio" name="category-select" value="play" > PLAY    <input type="radio" name="category-select" value="utility" > UTILITY
     </span>
   </p>
   <br>

@@ -809,6 +809,12 @@ function infoWindowContent(postingId){
 			});
 		},
 		'click .conversation_preview': function(event){
+			//toggle message time
+			$(event.currentTarget.children[0]).slideToggle(250);
+			//toggle preview message
+			$(event.currentTarget.children[4].children[0]).slideToggle(250);
+			//toggle preview author
+			$(event.currentTarget.children[3]).slideToggle(250);
 			//get conversation id from html
 			conversationId = event.currentTarget.attributes.name.value;
 			//set showconversation session variable
@@ -1265,34 +1271,34 @@ var weekDaysDisabled = [];
 			var rentalrate = $('[name="rentalrate"]').val();
 			var category = Session.get('categorySelect');
 			var postingImages = [];
-			$(".image_holder img").each(function(){
-				//get images from DOM
-				postingImages.push(this.src);	
-			})
-			var bookingsArray = [];
-			//check if "save details" checkbox is checked
-			if(document.getElementById('save_details').checked){
-			rentstuff_user = Rentstuff_Users.findOne({username: currentUsername});
-				Rentstuff_Users.update({_id: rentstuff_user._id},
-										{$set: {city: city,
+			
+			cloudinaryUpload(function(imageArray){
+				//upload images to cloudinary with callback
+				postingImages = imageArray;
+				var bookingsArray = [];
+				//check if "save details" checkbox is checked
+				if(document.getElementById('save_details').checked){
+				rentstuff_user = Rentstuff_Users.findOne({username: currentUsername});
+					Rentstuff_Users.update({_id: rentstuff_user._id},
+											{$set: {city: city,
 												region: region,
 												postalcode: postalcode,
 												address: street_address}});
-			}
-			var address;
+				}
+				var address;
 
-			if(street_address.length == 0){
+				if(street_address.length == 0){
 				address = postalcode;
-			} else{
-				address = street_address;
-			}
+				} else{
+					address = street_address;
+				}
 
-			console.log(address);
+				console.log(address);
 
-			searchAddress(address, function(geocode_address){
-			//search location to get geocoded address, 
-			//callback inserts posting into postings collection
-				var results = Postings.insert({title: title,
+				searchAddress(address, function(geocode_address){
+					//search location to get geocoded address, 
+					//callback inserts posting into postings collection
+					var results = Postings.insert({title: title,
 							description: description,
 							city: city,
 							region: region,
@@ -1313,11 +1319,12 @@ var weekDaysDisabled = [];
 								postingBookings: []
 							},
 							weekDaysDisabled: weekDaysDisabled
+					});
+					Session.set('categorySelect', "");
+					Session.set("selected_images", null);
+					//go to posting	
+					Router.go('posting', {_id: results});
 				});
-				Session.set('categorySelect', "");
-				Session.set("selected_images", null);
-				//go to posting	
-				Router.go('posting', {_id: results});
 			});
 		},
 		'click .delete-image': function(){
@@ -1687,25 +1694,45 @@ $.cloudinary.config({
 });
 //
 	Template.imageupload.events({
-		//Submit form event
-		'submit form': function(event, t){
-			event.preventDefault();
+	'change input': function(event){
+		id = event.currentTarget.id;
+		//create image source from input
+		image_source = URL.createObjectURL(event.currentTarget.files[0]);
+		//append to image container
+		$('#image_container').append("<div class='image-wrap'><span class='close' name='"+id+"'>&times;</span><img src='"+image_source+"' /></div>");
+	},
+	'click .close': function(event){
+		input_id = event.currentTarget.attributes.name.value;
+		//remove image-wrap parent container when clicked
+		event.currentTarget.parentElement.remove();
+		//set corresponding input to null
+		$('#'+input_id).val('');
+	}
+});
 
-			var imageArray = [];
-			console.log(imageArray);
-			var numuploads = $("#postingimages input").length; //count how many images to upload
-			console.log(numuploads);
-			for(i = 1; i < numuploads+1; i++){ //loop through images
+function cloudinaryUpload(fn){
+	event.preventDefault();
 
-			var files = []
-			var file = $('#postingimage'+i)[0].files[0];
-			if(file != null){
+	var imageArray = [];
+	var numFiles = 0;
+
+	//loop through posting images input
+	$("#postingimages input").each(function(){
+		
+		var files = [];
+		//get file from input
+		var file = this.files[0];
+
+		if(file != null){
+			numFiles++;
+			//increment numFiles variable
 			files.push(file)
 			console.log(files);
+			//upload image
 			Cloudinary._upload_file(files[0], {}, function(err, res){
-				
+				//on callback, add imageurl to imageArray
 				if(err){
-					console.log(error);
+					console.log(err);
 					return;
 				}
 				var imageurl = res.secure_url;
@@ -1713,14 +1740,15 @@ $.cloudinary.config({
 				console.log(res.public_id);
 				imageArray.push(imageurl);
 				console.log(imageArray);
-				$('.image_holder').append(
-				"<p><img src="+imageurl+"><a href='#' class='delete-image'>[delete]</a></p>"
-				);
+				console.log(numFiles);
+				//if all images are uploaded, finish function
+				if(imageArray.length == numFiles){
+					fn(imageArray);
+				}
 			});
-			}
 		}
-	}
-});
+	});
+}	
 
 /*Time Difference Function*/
 

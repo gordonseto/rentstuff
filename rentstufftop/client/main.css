@@ -183,7 +183,7 @@ a, a:hover, a:active, a:visited {
 
 .pageNav {
 	clear:both;
-	margin-left: 35%;
+	margin-left: 45%;
 }
 
 .pageNav button{
@@ -290,44 +290,6 @@ td:hover{
 	overflow-y: auto;
 	overflow-x: hidden;
 	height: 80%;
-}
-
-.pagination {
-  float: left;
-  padding-left: 2.5%;
-  margin: 20px 0;
-  border-radius: 4px;
-}
-
-.pagination > li {
-  display: inline;
-}
-
-.pagination > li > a,
-.pagination > li > span {
-  color: #00B374;
-  position: relative;
-  float: left;
-  padding: 6px 12px;
-  line-height: 1.428571429;
-  text-decoration: none;
-  background-color: #ffffff;
-  border: 1px solid #dddddd;
-  font-weight: bold;
-  margin: 5px;
-}
-
-.pagination > .active > a,
-.pagination > .active > span,
-.pagination > .active > a:hover,
-.pagination > .active > span:hover,
-.pagination > .active > a:focus,
-.pagination > .active > span:focus {
-  z-index: 2;
-  color: #808080;
-  cursor: default;
-  background-color: #E3E3E3;
-  border-color: #C4C4C4;
 }
 
 .posting_content_left{
@@ -624,6 +586,42 @@ td:hover{
 	height: 40px;
 }
 
+#image_container img{
+	width: auto;
+	height: auto;
+	max-width: 220px;
+	max-height: 294px;
+}
+
+.image-wrap {
+	overflow: auto;
+	width: auto;
+	height: auto;
+	position: relative;
+	display: inline-block;
+}
+
+.image-wrap .close {
+	position: absolute;
+    top: 2px;
+    right: 2px;
+    z-index: 100;
+    background-color: #FFF;
+    padding: 5px 2px 2px;
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    opacity: .5;
+    text-align: center;
+    font-size: 22px;
+    line-height: 10px;
+    border-radius: 50%;
+}
+
+.image-wrap:hover .close {
+    opacity: 1;
+}
+
 .messenger {
 	margin-top: 100px;
 	margin-left: 32.5%;
@@ -780,6 +778,7 @@ td:hover{
 	clear:right;
 	float: right;
 	width: auto;
+	margin-top: 2px;
 	margin-right: 5px;
 }
 
