@@ -420,6 +420,9 @@ function infoWindowContent(postingId){
 		}
 	});
 
+var timer;
+var doLoop = false;
+
 	Template.filter.events({
 		'click .maptoggle': function(){
 			//get element from the DOM
@@ -517,8 +520,59 @@ function infoWindowContent(postingId){
 				event.currentTarget.style.fontWeight = "bold";			
 				Session.set('categoryFilter', categoriesArray);
 			} 
+		},
+		'mouseenter .posting_image': function(event){
+			//get posting _id
+			postingId = this._id;
+			//get posting
+			posting = Postings.findOne({_id: postingId});
+			//get posting images array
+			postingImages = posting.postingImages;
+			//get image container
+			image = event.currentTarget.children[0];
+			//initialize animation
+			var i = 0;
+			doLoop = true;
+			animate();
+
+			// Start animation
+			function animate() {
+				if(doLoop === true){
+					//recursively loop through postingImages
+					//with timeout of 750ms
+					if(postingImages[i]){
+    					image.src = postingImages[i];
+    				}
+    				i++;
+
+    				if (i >= postingImages.length){
+    					//if reach end of postingImages,
+    					//start loop again
+        				i = 0;
+    				}
+
+    				timer = setTimeout(animate, 750);
+				}
+			}
+		},
+		'mouseleave .posting_image': function(event){
+			//stop loop
+			clearTimeout(timer);
+			doLoop = false;
+			//get posting _id
+			postingId = this._id;
+			//get posting
+			posting = Postings.findOne({_id: postingId});
+			//get posting images array
+			postingImages = posting.postingImages;
+			//get image container
+			image = event.currentTarget.children[0];
+			//set image to postingImages[0]
+			if(postingImages[0]){
+				image.src = postingImages[0];			
+			}
 		}
-	})
+	});
 
 	Template.searchbox.helpers({
   		getPostings: function() {
