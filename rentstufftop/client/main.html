@@ -25,6 +25,11 @@
     </h5>
   </div>
 </div>
+<div class="location_search">
+  <form>
+  <p><span class="glyphicon glyphicon-search" aria-hidden="true"></span><input id="location" type="text" placeholder="city" value="{{city}}"/></p>
+  </form>
+</div>
 </template>
 
 <template name="home">
@@ -45,11 +50,6 @@
 </template>
 
 <template name="filter">
-<div class="location_search">
-  <form>
-  <p><span class="glyphicon glyphicon-search" aria-hidden="true"></span><input id="location" type="text" placeholder="city" value="{{city}}"/></p>
-  </form>
-</div>
 <div class="content-left">
   <form>
   <p><input type="button" id="filterstoggle" class="filterstoggle" value="filters"></p>

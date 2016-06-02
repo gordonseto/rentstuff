@@ -143,6 +143,9 @@ Router.route('/messages', {
 		'loggedinUser': function(){
 			//shows users username on navigation bar
 			return Meteor.user().username;
+		},
+		city: function(){
+			return Session.get('locationFilter');
 		}
 	});
 
@@ -151,6 +154,15 @@ Router.route('/messages', {
 			Meteor.logout();
 			//refresh the page
 			document.location.reload(true);
+		},
+		'submit': function(event, template){
+			event.preventDefault();
+			//searches new location when entered by user
+			var location = $('#location').val();
+			if(location){
+				location = location.toLowerCase();
+				Router.go('/s/'+location);
+			}
 		}
 	});
 
@@ -496,15 +508,6 @@ var doLoop = false;
 			event.preventDefault();
 			//opens new tab when clicking posting_previews
 			window.open(event.currentTarget.href);
-		},
-		'submit': function(event, template){
-			event.preventDefault();
-			//searches new location when entered by user
-			var location = $('#location').val();
-			if(location){
-				location = location.toLowerCase();
-				Router.go('/s/'+location);
-			}
 		},	
 		//mouseenter, change color to green
 		'mouseenter .posting_container': function(event, template){
