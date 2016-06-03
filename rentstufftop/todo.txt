@@ -18,3 +18,5 @@ googe maps api key: AIzaSyCxnXWYmJJy6qeEEOFLf86bqK1vVw3t6ZA
 -fix pagination pages when filters turn off
 -post preview hover, show more pictures
 -navbar unread messages
+-phone number
+-remove city and province

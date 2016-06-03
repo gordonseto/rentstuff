@@ -328,7 +328,8 @@ td:hover{
 	margin-left: 5%;
 	overflow-y: auto;
 	overflow-x: hidden;
-	height: 82.5%;
+	height: 85%;
+	padding-bottom: 20px;
 }
 
 .posting_content_left{

@@ -24,7 +24,7 @@ Conversations = new Mongo.Collection('conversations');
 //Client-Only Collection
 Temporary_Markers = new Mongo.Collection(null);
 
-var recordsPerPage = 12;
+const recordsPerPage = 12;
 
 //Search box
 var options = {
